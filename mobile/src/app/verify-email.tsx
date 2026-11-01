@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import { BackHandler } from 'react-native';
 
 import { Button } from '@/components/ui/button';
 import { FormScreen } from '@/components/ui/screen';
@@ -17,6 +19,12 @@ export default function VerifyEmail() {
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [cooldown, setCooldown] = useState(COOLDOWN_S); // a code was just sent on sign-up
+
+  // Same rule as Login/Register: no way back to browsing until the email is verified.
+  useFocusEffect(useCallback(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => true);
+    return () => sub.remove();
+  }, []));
 
   useEffect(() => {
     if (cooldown <= 0) return;

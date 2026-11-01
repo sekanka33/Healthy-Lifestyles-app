@@ -27,8 +27,8 @@ const SAMPLE_DOSES: ScheduledDose[] = [
 
 export default function Medications() {
   const { user } = useAuth();
-  const { isGuest, gate } = useAccountGate();
-  const premium = user?.plan === 'premium';
+  const { isGuest, needsVerification, gate } = useAccountGate();
+  const premium = !isGuest && user?.plan === 'premium';
   const [doses, setDoses] = useState<ScheduledDose[] | null>(null);
   const [meds, setMeds] = useState<Medication[] | null>(null);
   const [adherence, setAdherence] = useState<AdherenceRow[]>([]);
@@ -82,7 +82,7 @@ export default function Medications() {
               Add your medications exactly as prescribed, get reminders at the right local time, and log each dose as
               taken or skipped. Part of Premium.
             </AppText>
-            <Button title={isGuest ? 'SIGN IN TO GET STARTED' : 'SEE PREMIUM'} onPress={upsell} />
+            <Button title={needsVerification ? 'VERIFY EMAIL TO GET STARTED' : isGuest ? 'SIGN IN TO GET STARTED' : 'SEE PREMIUM'} onPress={upsell} />
           </View>
           <View style={styles.sectionHead}>
             <AppText variant="heading">Today</AppText>

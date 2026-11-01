@@ -16,14 +16,14 @@ import { colors, fonts, radius } from '@/theme/tokens';
 const GOAL_PRESETS = [1500, 2000, 2500, 3000];
 
 export default function Profile() {
-  const { status, user } = useAuth();
-  // Guests must never trigger account API calls (they'd just bounce off 401s).
-  return status === 'signedIn' && user ? <SignedInProfile /> : <GuestProfile />;
+  const { isGuest } = useAccountGate();
+  // Guests and unverified accounts must never trigger account API calls (they'd bounce off 401/403s).
+  return isGuest ? <GuestProfile /> : <SignedInProfile />;
 }
 
 /** What a visitor can explore without an account. Every button leads to sign-in. */
 function GuestProfile() {
-  const { gate } = useAccountGate();
+  const { gate, needsVerification } = useAccountGate();
   const settings = [
     { title: 'Daily water goal', detail: 'Pick 1.5–3 L or any custom amount. Past days keep their goal.' },
     { title: 'Reminders', detail: 'Gentle hydration nudges with quiet hours.' },
@@ -36,11 +36,13 @@ function GuestProfile() {
       <ScrollView contentContainerStyle={styles.content}>
         <AppText variant="title">Profile</AppText>
         <View style={styles.guestCard}>
-          <AppText variant="heading">You&apos;re browsing as a guest</AppText>
+          <AppText variant="heading">{needsVerification ? 'Verify your email to continue' : 'Explore the app'}</AppText>
           <AppText variant="caption">
-            Look around as much as you like. To track water, set goals or use any feature, sign in or create a free account.
+            {needsVerification
+              ? 'Enter the 6-digit code we emailed you to start tracking and use every feature.'
+              : 'Look around as much as you like. To track water, set goals or use any feature, sign in or create a free account.'}
           </AppText>
-          <Button title="SIGN IN OR CREATE ACCOUNT" onPress={gate(() => undefined)} />
+          <Button title={needsVerification ? 'ENTER CODE' : 'SIGN IN OR CREATE ACCOUNT'} onPress={gate(() => undefined)} />
         </View>
 
         <Section title="What you can do">

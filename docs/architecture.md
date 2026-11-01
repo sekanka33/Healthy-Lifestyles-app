@@ -99,7 +99,9 @@ period, and not past `expires_at`. See [subscriptions setup](subscriptions-setup
 
 ## Guest mode
 
-Signed-out visitors open straight into the tabs (Water, History, Profile) and can browse freely:
+**The first screen is always the app's content.** Everyone opens straight into the tabs (Water,
+History, Meds, Profile) and can browse freely — visitors without an account and accounts whose email
+isn't verified yet alike:
 Water and History show clearly labelled **sample** data, Profile shows a guest overview with the
 Free vs Premium feature table and the settings that an account unlocks. The tab bar works normally.
 Every other button or control (water chips, + WATER, undo, custom amount, history range, profile
@@ -108,7 +110,9 @@ back to browsing**: there's no "continue as guest" button, the iOS swipe-to-dism
 Android's back button is swallowed, so the only way forward is to sign in or create an account.
 Navigation between sign-in, registration and password reset works normally. Guests never call account APIs. Account-only screens
 (`premium`, `payments`, `change-password`) are guarded by `Stack.Protected`. After sign-in the modal
-closes onto the same tab with real data; a new account goes through email verification first.
+closes onto the same tab with real data. Straight after registering, the verify-email screen opens
+(same no-way-back rule). An unverified account that reopens the app later lands on the content again,
+and any action outside the tab bar takes it to the verify-email screen.
 
 ## API (Phase 6 — medication, Premium)
 
