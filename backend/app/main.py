@@ -5,6 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.api.v1 import api_router
 from app.core.config import get_settings
 
 logger = logging.getLogger("app")
@@ -49,6 +50,7 @@ def create_app() -> FastAPI:
     def health() -> dict:
         return {"status": "ok", "environment": settings.environment}
 
+    app.include_router(api_router)
     return app
 
 

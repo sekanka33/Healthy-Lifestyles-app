@@ -35,3 +35,8 @@ class Timestamps:
     updated_at: Mapped[datetime] = mapped_column(
         default=utcnow, onupdate=utcnow, server_default=func.now()
     )
+
+
+def as_utc(dt: datetime) -> datetime:
+    """SQLite hands back naive datetimes; everything we store is UTC."""
+    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)

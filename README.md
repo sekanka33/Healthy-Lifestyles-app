@@ -13,8 +13,8 @@ recommendations and Google Calendar planning (Premium, $11 USD / month).
 |---|---|
 | 1. Inspection & design analysis | ✅ Done |
 | 2. Architecture, schema, dev environment | ✅ Done (4 tests passing) |
-| 3. Auth, profile, hydration | ⏳ Next |
-| 4. Animated glass | — |
+| 3. Auth, profile, hydration | ✅ Done (30 backend tests passing) |
+| 4. Animated glass | ⏳ Next |
 | 5. Subscriptions | — |
 | 6. Medication | — |
 | 7. GPS fitness & health | — |
@@ -34,12 +34,18 @@ recommendations and Google Calendar planning (Premium, $11 USD / month).
 cd backend
 python -m venv .venv
 .venv\Scripts\activate            # Windows   (source .venv/bin/activate on macOS/Linux)
-pip install fastapi uvicorn "pydantic[email]" pydantic-settings sqlalchemy alembic "psycopg[binary]" argon2-cffi pyjwt httpx cryptography reportlab pytest
+pip install -e ".[dev]"
 copy .env.example .env            # then fill in values
 alembic upgrade head              # requires DATABASE_URL to point at PostgreSQL
 uvicorn app.main:app --reload     # API docs at http://localhost:8000/docs
 pytest                            # tests
 ```
+
+With `EMAIL_PROVIDER=disabled` in development, verification and reset codes are printed
+to the API log instead of being emailed — handy before a mail server is set up. For real
+emails locally, run [Mailpit](https://mailpit.axllent.org/) and set `EMAIL_PROVIDER=smtp`.
+
+No PostgreSQL yet? For a quick local try-out, `DATABASE_URL=sqlite:///./dev.db` works too.
 
 To run the migration test against PostgreSQL too, set `TEST_POSTGRES_URL` to an
 **empty, disposable** database.
@@ -49,8 +55,13 @@ To run the migration test against PostgreSQL too, set `TEST_POSTGRES_URL` to an
 ```bash
 cd mobile
 npm install
+copy .env.example .env.local      # set EXPO_PUBLIC_API_URL if the defaults below don't fit
 npx expo start
 ```
+
+The app calls `http://10.0.2.2:8000` on the Android emulator and `http://localhost:8000`
+on iOS simulator / web. On a physical phone set `EXPO_PUBLIC_API_URL` to your computer's
+LAN address and start the API with `uvicorn app.main:app --host 0.0.0.0`.
 
 GPS background tracking, Health Connect, HealthKit and in-app purchases need a
 **development build** (`npx expo run:android` / `eas build --profile development`);

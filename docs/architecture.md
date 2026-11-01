@@ -47,3 +47,38 @@ display resets at local midnight without deleting history, and DST days of
 
 Enforced by a `require_premium` FastAPI dependency that reads the
 server-side `subscription_entitlements` row — never a client flag.
+
+## API (Phase 3)
+
+All routes are under `/api/v1`. Errors always look like `{"error": {"code", "message", "details"?}}`.
+Interactive docs: `http://localhost:8000/docs` (disabled in production).
+
+| Method & path | Auth | Purpose |
+|---|---|---|
+| `POST /auth/register` | — | Create account, returns tokens + user, emails a 6-digit code |
+| `POST /auth/verify-email` | any user | Confirm the code (5 attempts, 10 min TTL) |
+| `POST /auth/resend-verification` | any user | New code (60 s cooldown); old code stops working |
+| `POST /auth/login` | — | Email + password → tokens + user |
+| `POST /auth/refresh` | — | Rotate refresh token; replaying an old one revokes the whole session family |
+| `POST /auth/logout` | — | Revoke the refresh token's session |
+| `POST /auth/forgot-password` | — | Always 202 (no account enumeration); emails a 6-digit code |
+| `POST /auth/reset-password` | — | Code + new password; signs out every session |
+| `POST /auth/change-password` | any user | Signs out other sessions, returns fresh tokens |
+| `GET/PATCH /me` | any user | Profile (name, time zone, units, locale). Email/plan are read-only |
+| `GET/PATCH /me/notification-preferences` | any user | Reminder settings |
+| `POST /hydration/entries` | verified | Log water; 201 new, 200 idempotent replay of the same `client_id` |
+| `DELETE /hydration/entries/{client_id}` | verified | Undo (soft delete, idempotent) |
+| `GET /hydration/today` · `GET /hydration/days/{date}` | verified | Total, goal, progress and entries for a local day |
+| `GET /hydration/history?from&to` | verified | Per-day totals (default last 7 days, max 366) |
+| `GET/PUT /hydration/goal` | verified | Daily goal; changes apply from today without rewriting past days |
+
+**Auth details.** Access tokens are 15-minute HS256 JWTs; tokens issued before a password
+change are rejected at once. Refresh tokens are opaque, stored as SHA-256 hashes, rotate on every
+use, and live in the device keychain/keystore (`expo-secure-store`). One-time codes are stored as
+keyed HMACs. Login, registration, reset and verification are rate limited (DB-backed buckets).
+The mobile client refreshes single-flight, because two parallel refreshes would look like token theft.
+
+**Offline hydration.** The app writes each tap to a persisted queue (AsyncStorage) with a device
+UUID before calling the API, shows `server snapshot + queued adds − queued deletes`, and flushes the
+queue in order on launch, focus, foreground and after each tap. Undo of an unsynced tap just
+removes it from the queue.
