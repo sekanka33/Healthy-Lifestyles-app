@@ -216,3 +216,22 @@ are told how many ideas Premium would show. Refreshing replaces only unanswered 
 scheduled/dismissed ones are kept and never duplicated.
 
 Errors may now carry extra fields alongside `code`/`message` (e.g. `auth_url`).
+
+## API (Phase 10 — reports, email, privacy)
+
+| Method & path | Auth | Purpose |
+|---|---|---|
+| `GET /reports/{water,fitness,medication}.pdf?period` or `?from&to` | verified (fitness/medication: Premium) | Report PDF |
+| `POST /reports/{kind}/email?period` | as above | Queue the report to the verified email |
+| `GET/PATCH /me/email-preferences` | verified | Frequency per report, medication detail level, opt-ins |
+| `GET/POST /email/unsubscribe?u&c&t` | signed link | Confirmation page + RFC 8058 one-click |
+| `POST /email/webhooks/resend` | Svix signature | delivered / bounced / complained; replay-protected; idempotent |
+| `GET /me/export` · `POST /me/export/email` | any user | All your data as JSON (no secrets) |
+| `POST /me/delete` | any user + password | Permanent deletion (revokes Google, cascades everything) |
+
+**Worker** (`python -m app.worker`): durable `jobs` table claimed with `SKIP LOCKED`, exponential
+backoff, dead-lettering, stale-lock recovery. Every minute it schedules reports due at 07:00 in each
+user's zone (daily = yesterday; weekly = last Mon–Sun, on Mondays; monthly = last month, on the 1st;
+empty scheduled reports are skipped). Hourly it deletes expired security records. A receipt email
+(PDF) goes out once per new verified payment. Subjects never contain health details; medication
+emails omit names and the PDF unless the user chooses "detailed".

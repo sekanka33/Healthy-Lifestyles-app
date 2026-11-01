@@ -196,6 +196,14 @@ export type SchedulingPrefs = {
   min_free_slot_minutes: number; preferred_activities: Activity[]; preferred_activity_times: ('morning' | 'afternoon' | 'evening')[];
 };
 
+export type Frequency = 'off' | 'daily' | 'weekly' | 'monthly';
+export type EmailPrefs = {
+  water_summary: Frequency; fitness_report: Frequency; medication_report: Frequency;
+  medication_report_detail: 'summary_only' | 'detailed'; combined_weekly_report: boolean;
+  subscription_lifecycle_emails: boolean; product_updates: boolean;
+};
+export type ReportKind = 'water' | 'fitness' | 'medication';
+
 // ------------------------------------------------------------------ errors
 
 export class ApiError extends Error {
@@ -418,4 +426,11 @@ export const api = {
   scheduleRecommendation: (id: string) => authed<Recommendation>('POST', `/recommendations/${id}/schedule`),
   schedulingPrefs: () => authed<SchedulingPrefs>('GET', '/me/scheduling-preferences'),
   setSchedulingPrefs: (b: Partial<SchedulingPrefs>) => authed<SchedulingPrefs>('PATCH', '/me/scheduling-preferences', b),
+
+  emailPrefs: () => authed<EmailPrefs>('GET', '/me/email-preferences'),
+  setEmailPrefs: (b: Partial<EmailPrefs>) => authed<EmailPrefs>('PATCH', '/me/email-preferences', b),
+  emailReport: (kind: ReportKind, period: 'this_week' | 'this_month' | 'weekly' | 'monthly' = 'this_week') =>
+    authed<{ status: string; to: string }>('POST', `/reports/${kind}/email?period=${period}`),
+  exportByEmail: () => authed<{ status: string; to: string }>('POST', '/me/export/email'),
+  deleteAccount: (password: string) => authed<void>('POST', '/me/delete', { password }),
 };

@@ -5,7 +5,7 @@ recommendations and Google Calendar planning (Premium, $11 USD / month).
 
 - `mobile/` — Expo SDK 58 · React Native · TypeScript · Expo Router
 - `backend/` — FastAPI · SQLAlchemy · Alembic · PostgreSQL
-- `docs/` — [design reference](docs/design-reference.md), [architecture](docs/architecture.md), [subscriptions setup](docs/subscriptions-setup.md), [calendar setup](docs/calendar-setup.md)
+- `docs/` — [design reference](docs/design-reference.md), [architecture](docs/architecture.md), [subscriptions setup](docs/subscriptions-setup.md), [calendar setup](docs/calendar-setup.md), [deployment](docs/deployment.md), [privacy policy template](docs/privacy-policy-template.md)
 
 ## Status
 
@@ -20,7 +20,7 @@ recommendations and Google Calendar planning (Premium, $11 USD / month).
 | 7. GPS fitness & health | ✅ GPS workouts, goals, health import API (84 backend tests) — device health-app sync pending |
 | 8. Weather | ✅ Done (93 backend tests passing) |
 | 9. Calendar & recommendations | ✅ Done (112 backend tests) — see [setup](docs/calendar-setup.md) |
-| 10. Reports, email, privacy, deployment | ⏳ Next |
+| 10. Reports, email, privacy, deployment | ✅ Done (129 backend tests) — see [deployment](docs/deployment.md) |
 
 ## Prerequisites
 
@@ -38,6 +38,7 @@ pip install -e ".[dev]"
 copy .env.example .env            # then fill in values
 alembic upgrade head              # requires DATABASE_URL to point at PostgreSQL
 uvicorn app.main:app --reload     # API docs at http://localhost:8000/docs
+python -m app.worker              # background jobs: report/receipt/export emails (2nd terminal)
 pytest                            # tests
 ```
 

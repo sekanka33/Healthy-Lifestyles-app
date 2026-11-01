@@ -23,7 +23,11 @@ class Settings(BaseSettings):
 
     # Browser origins allowed to call the API (only the web build needs this; native apps don't use CORS).
     # Comma-separated in the environment, e.g. CORS_ORIGINS=https://app.example.com
-    cors_origins: list[str] = Field(default_factory=list)
+    cors_origins: str = ""
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        return [o.strip().rstrip("/") for o in self.cors_origins.split(",") if o.strip()]
 
     database_url: str = "postgresql+psycopg://wellness:wellness@localhost:5432/wellness"
 
@@ -48,6 +52,8 @@ class Settings(BaseSettings):
     smtp_password: str | None = None
     smtp_starttls: bool = False
     resend_api_key: str | None = None
+    # Resend → Webhooks signing secret ("whsec_…"), used to verify delivery/bounce events.
+    resend_webhook_secret: str | None = None
 
     # Integrations
     openweather_api_key: str | None = None
@@ -71,6 +77,8 @@ class Settings(BaseSettings):
             problems.append("PUBLIC_API_URL must use https")
         if self.email_provider == "disabled":
             problems.append("EMAIL_PROVIDER must be configured")
+        if self.email_provider == "resend" and not self.resend_api_key:
+            problems.append("RESEND_API_KEY is required when EMAIL_PROVIDER=resend")
         if not self.revenuecat_secret_api_key or not self.revenuecat_webhook_auth:
             problems.append("REVENUECAT_SECRET_API_KEY and REVENUECAT_WEBHOOK_AUTH are required")
         elif len(self.revenuecat_webhook_auth) < 32:

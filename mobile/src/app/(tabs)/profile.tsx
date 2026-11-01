@@ -29,6 +29,7 @@ function GuestProfile() {
     { title: 'Reminders', detail: 'Gentle hydration nudges with quiet hours.' },
     { title: 'Units & time zone', detail: 'Metric or imperial; your day resets at local midnight.' },
     { title: 'Premium', detail: 'Medication reminders, GPS workouts, weather-aware plans.' },
+    { title: 'Email reports', detail: 'Daily, weekly or monthly summaries with a PDF, sent to your inbox.' },
     { title: 'Google Calendar', detail: 'Connect your calendar for water breaks and workouts that fit your day.' },
     { title: 'Payment history', detail: 'Every payment you make, in one place.' },
   ];
@@ -198,6 +199,11 @@ function SignedInProfile() {
         <Section title="Planning">
           <Button title="Today's plan" variant="secondary" onPress={() => router.push('/plan')} />
           <Button title="Google Calendar & plan settings" variant="ghost" onPress={() => router.push('/plan-settings')} />
+        </Section>
+
+        <Section title="Email & privacy">
+          <Button title="Email & reports" variant="secondary" onPress={() => router.push('/email-settings')} />
+          <Button title="Privacy & data" variant="ghost" onPress={() => router.push('/privacy')} />
         </Section>
 
         <Section title="Security">

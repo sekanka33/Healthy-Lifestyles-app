@@ -22,7 +22,7 @@ from app.core.config import get_settings
 from app.db.base import utcnow
 from app.models.billing import PaymentTransaction, SubscriptionEntitlement, WebhookEvent
 from app.models.user import User
-from app.services import revenuecat
+from app.services import jobs, revenuecat
 from app.services.revenuecat import EntitlementState, RevenueCatError, derive_entitlement, normalise_store, parse_ts
 
 logger = logging.getLogger("app.billing")
@@ -134,20 +134,20 @@ def _receipt_number() -> str:
     return f"HL-{utcnow():%Y%m%d}-{secrets.token_hex(4).upper()}"
 
 
-def _record_transaction(db: Session, user_id: uuid.UUID, event: dict) -> None:
+def _record_transaction(db: Session, user_id: uuid.UUID, event: dict) -> PaymentTransaction | None:
     kind = PURCHASE_KINDS.get(event.get("type", ""))
     store = normalise_store(event.get("store"))
     txn_id = event.get("transaction_id")
     if not kind or store not in LEDGER_STORES or not txn_id:
-        return
+        return None
     exists = db.execute(select(PaymentTransaction.id).where(
         PaymentTransaction.provider == store, PaymentTransaction.provider_transaction_id == txn_id,
     )).first()
     if exists:
-        return
+        return None
     amount = _decimal(event.get("price_in_purchased_currency"))
     succeeded = amount is not None and amount >= 0
-    db.add(PaymentTransaction(
+    txn = PaymentTransaction(
         user_id=user_id,
         provider=store,
         provider_transaction_id=txn_id,
@@ -163,7 +163,9 @@ def _record_transaction(db: Session, user_id: uuid.UUID, event: dict) -> None:
         period_end=parse_ts(event.get("expiration_at_ms")),
         environment="sandbox" if str(event.get("environment", "")).upper() == "SANDBOX" else "production",
         receipt_number=_receipt_number() if succeeded else None,
-    ))
+    )
+    db.add(txn)
+    return txn
 
 
 def _record_refund(db: Session, event: dict) -> None:
@@ -208,10 +210,12 @@ def process_webhook(db: Session, payload: dict) -> str:
         return "ignored"
 
     try:
-        for uid in user_ids:
-            _record_transaction(db, uid, event)
+        new = [t for uid in user_ids if (t := _record_transaction(db, uid, event)) is not None]
         _record_refund(db, event)
         db.commit()
+        for t in new:
+            if t.receipt_number:  # emailed by the worker; idempotent per transaction
+                jobs.enqueue(db, "email_receipt", {"transaction_id": str(t.id)}, idempotency_key=f"receipt:{t.id}")
         for uid in user_ids:
             sync_user(db, uid)
     except RevenueCatError as exc:

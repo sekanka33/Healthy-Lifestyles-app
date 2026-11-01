@@ -1,0 +1,52 @@
+# Local, production-like stack:  docker compose up --build
+# With a local mail catcher (UI on http://localhost:8025):  docker compose --profile dev up --build
+# Secrets come from backend/.env (copy backend/.env.example). Never commit real values.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: wellness
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wellness-local-only}
+      POSTGRES_DB: wellness
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wellness -d wellness"]
+      interval: 5s
+      retries: 10
+
+  migrate:
+    build: ./backend
+    command: ["alembic", "upgrade", "head"]
+    env_file: backend/.env
+    environment:
+      DATABASE_URL: postgresql+psycopg://wellness:${POSTGRES_PASSWORD:-wellness-local-only}@db:5432/wellness
+    depends_on:
+      db: { condition: service_healthy }
+
+  api:
+    build: ./backend
+    env_file: backend/.env
+    environment:
+      DATABASE_URL: postgresql+psycopg://wellness:${POSTGRES_PASSWORD:-wellness-local-only}@db:5432/wellness
+      SMTP_HOST: mailpit
+    ports: ["8000:8000"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+  worker:
+    build: ./backend
+    command: ["python", "-m", "app.worker"]
+    env_file: backend/.env
+    environment:
+      DATABASE_URL: postgresql+psycopg://wellness:${POSTGRES_PASSWORD:-wellness-local-only}@db:5432/wellness
+      SMTP_HOST: mailpit
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+  mailpit:
+    image: axllent/mailpit:latest
+    profiles: [dev]
+    ports: ["8025:8025", "1025:1025"]
+
+volumes:
+  pgdata:

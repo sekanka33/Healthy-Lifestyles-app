@@ -79,6 +79,8 @@ function RootNavigator() {
         <Stack.Screen name="weather-location" options={{ presentation: 'modal' }} />
         <Stack.Screen name="plan" />
         <Stack.Screen name="plan-settings" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="email-settings" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="privacy" options={{ presentation: 'modal' }} />
       </Stack.Protected>
       <Stack.Protected guard={signedIn && !verified}>
         <Stack.Screen name="verify-email" options={{ gestureEnabled: false, animation: 'slide_from_bottom' }} />
