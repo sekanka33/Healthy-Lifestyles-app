@@ -67,8 +67,12 @@ Measured from row scans of the glass silhouette:
 
 ## Motion (implemented in code, not in the static reference)
 
-- Water rises/falls with a spring/ease toward `min(intake / goal, 1) × maxFill`.
-- Continuous low-amplitude surface ripple; brief larger wave on each add (splash).
-- Bubbles rise from the base and fade before reaching the surface.
-- Numeral counts up to the new value.
+Implemented in `mobile/src/components/water-glass.tsx` (Reanimated, UI thread), with the pure
+maths in `glass-math.ts` and unit tests in `mobile/tests/`. With the OS "reduce motion" setting on,
+the level jumps straight to its value, the water is flat, and there are no bubbles or count-up.
+
+- Water rises/falls with a spring (damping 16, stiffness 70) toward `min(intake / goal, 1) × maxFill`.
+- Continuous low-amplitude surface ripple (two summed sines, 3.2 s period); a larger wave on each add (splash, decays over 1.2 s). The marker bobs with the surface.
+- Three bubbles on staggered loops rise from the base and fade out before reaching the surface; none when the glass is nearly empty.
+- Numeral counts up (or down on undo) with an ease-out over 550 ms, using tabular digits.
 - Button scales to ~0.96 on press.

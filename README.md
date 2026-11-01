@@ -14,8 +14,8 @@ recommendations and Google Calendar planning (Premium, $11 USD / month).
 | 1. Inspection & design analysis | ✅ Done |
 | 2. Architecture, schema, dev environment | ✅ Done (4 tests passing) |
 | 3. Auth, profile, hydration | ✅ Done (30 backend tests passing) |
-| 4. Animated glass | ⏳ Next |
-| 5. Subscriptions | — |
+| 4. Animated glass | ✅ Done (7 mobile unit tests passing) |
+| 5. Subscriptions | ⏳ Next |
 | 6. Medication | — |
 | 7. GPS fitness & health | — |
 | 8. Weather | — |
@@ -57,6 +57,8 @@ cd mobile
 npm install
 copy .env.example .env.local      # set EXPO_PUBLIC_API_URL if the defaults below don't fit
 npx expo start
+npm test                          # glass maths unit tests (Node's built-in runner)
+npm run typecheck
 ```
 
 The app calls `http://10.0.2.2:8000` on the Android emulator and `http://localhost:8000`

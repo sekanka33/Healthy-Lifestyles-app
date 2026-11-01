@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { AppText } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import { WaterGlass } from '@/components/water-glass';
+import { useCountUp } from '@/hooks/use-count-up';
 import { useAuth } from '@/lib/auth-context';
 import { addWater, initHydration, setHydrationTimeZone, sync, undoLast, useHydration } from '@/lib/hydration-store';
 import { colors, fonts, radius } from '@/theme/tokens';
@@ -41,6 +42,7 @@ export default function HydrationScreen() {
 
   const glassWidth = Math.min(width * 0.45, (height * 0.38) * 0.66, 220);
   const remaining = Math.max(h.goalMl - h.totalMl, 0);
+  const shownTotal = useCountUp(h.totalMl);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -51,7 +53,7 @@ export default function HydrationScreen() {
 
       <View style={styles.center}>
         <View style={styles.totalRow} accessible accessibilityLabel={`${h.totalMl} millilitres of ${h.goalMl}`}>
-          <AppText variant="display">{h.totalMl.toLocaleString()}</AppText>
+          <AppText variant="display" style={styles.numeral}>{shownTotal.toLocaleString()}</AppText>
           <AppText style={styles.unit}>ml</AppText>
         </View>
         <AppText variant="caption">
@@ -134,6 +136,7 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 6 },
   totalRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
   unit: { fontFamily: fonts.heavy, fontSize: 28 },
+  numeral: { fontVariant: ['tabular-nums'] }, // digits don't jiggle while counting
   glass: { marginVertical: 18 },
   chips: { flexDirection: 'row', gap: 15, marginBottom: 18 },
   chip: { width: 82, height: 38, borderRadius: radius.pill, backgroundColor: colors.chip, alignItems: 'center', justifyContent: 'center' },
