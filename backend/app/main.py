@@ -31,9 +31,13 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(StarletteHTTPException)
     async def http_error(_: Request, exc: StarletteHTTPException):
-        code = exc.detail.get("code", "http_error") if isinstance(exc.detail, dict) else "http_error"
-        message = exc.detail.get("message", "") if isinstance(exc.detail, dict) else str(exc.detail)
-        return JSONResponse(error_body(code, message), status_code=exc.status_code, headers=exc.headers)
+        detail = exc.detail if isinstance(exc.detail, dict) else {}
+        code = detail.get("code", "http_error")
+        message = detail.get("message", "") if detail else str(exc.detail)
+        body = error_body(code, message)
+        # Extra, deliberately-set fields (e.g. auth_url for incremental consent) travel with the error.
+        body["error"].update({k: v for k, v in detail.items() if k not in ("code", "message")})
+        return JSONResponse(body, status_code=exc.status_code, headers=exc.headers)
 
     @app.exception_handler(RequestValidationError)
     async def validation_error(_: Request, exc: RequestValidationError):

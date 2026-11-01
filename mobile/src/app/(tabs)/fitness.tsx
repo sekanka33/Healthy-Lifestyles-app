@@ -138,6 +138,13 @@ export default function Fitness() {
           <AppText variant="title">Move</AppText>
           <WeatherCard state={weather} units={units} onChooseLocation={chooseLocation} onRetry={reloadWeather}
             sample={isGuest ? SAMPLE_WEATHER : undefined} />
+          <Pressable accessibilityRole="button" onPress={gate(() => router.push('/plan'))} style={styles.planCard}>
+            <View style={styles.flex}>
+              <AppText variant="heading">Today&apos;s plan</AppText>
+              <AppText variant="caption">Water breaks and workout ideas that fit your calendar and the weather.</AppText>
+            </View>
+            <AppText style={styles.chev}>›</AppText>
+          </Pressable>
           <View style={styles.card}>
             <AppText variant="heading">Track walks, jogs & runs</AppText>
             <AppText variant="caption">
@@ -221,6 +228,13 @@ export default function Fitness() {
         }} />}>
         <AppText variant="title">Move</AppText>
         <WeatherCard state={weather} units={units} onChooseLocation={chooseLocation} onRetry={reloadWeather} />
+        <Pressable accessibilityRole="button" onPress={gate(() => router.push('/plan'))} style={styles.planCard}>
+        <View style={styles.flex}>
+          <AppText variant="heading">Today&apos;s plan</AppText>
+          <AppText variant="caption">Water breaks and workout ideas that fit your calendar and the weather.</AppText>
+        </View>
+        <AppText style={styles.chev}>›</AppText>
+        </Pressable>
         <AppText variant="heading">Start a workout</AppText>
         <View style={styles.startRow}>
           {ACTIVITIES.map((a) => (
@@ -310,6 +324,8 @@ const styles = StyleSheet.create({
   liveValue: { fontFamily: fonts.heavy, fontSize: 28 },
   liveActions: { flexDirection: 'row', gap: 12, alignSelf: 'stretch' },
   card: { backgroundColor: colors.accentWash, borderRadius: radius.md, padding: 16, gap: 10 },
+  planCard: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, padding: 16 },
+  chev: { fontFamily: fonts.heavy, fontSize: 24, color: colors.textMuted },
   startRow: { flexDirection: 'row', gap: 10 },
   startBtn: { flex: 1, paddingHorizontal: 8 },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 },

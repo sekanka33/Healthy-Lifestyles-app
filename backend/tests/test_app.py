@@ -17,7 +17,7 @@ def test_unknown_route_uses_standard_error_shape():
 
 
 def test_production_refuses_insecure_defaults():
-    s = Settings(environment="production", jwt_secret="dev-insecure-change-me", _env_file=None)
+    s = Settings(environment="production", jwt_secret="dev-insecure-change-me", token_encryption_key=None, _env_file=None)
     try:
         s.validate_production()
     except RuntimeError as e:

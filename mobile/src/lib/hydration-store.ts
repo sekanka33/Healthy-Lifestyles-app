@@ -97,14 +97,18 @@ async function persist() {
 
 // ------------------------------------------------------------------ public API
 
+/** Restores the persisted queue once. Must run before anything writes, or unsynced taps would be lost. */
+async function ensureLoaded() {
+  if (loaded) return;
+  const [[, q], [, s]] = await AsyncStorage.multiGet([QUEUE_KEY, SNAPSHOT_KEY]).catch(() => [[QUEUE_KEY, null], [SNAPSHOT_KEY, null]] as [string, string | null][]);
+  queue = [...(q ? JSON.parse(q) : []), ...queue];
+  snapshot = s ? JSON.parse(s) : snapshot;
+  loaded = true;
+}
+
 export async function initHydration(tz: string) {
   timeZone = tz;
-  if (!loaded) {
-    const [[, q], [, s]] = await AsyncStorage.multiGet([QUEUE_KEY, SNAPSHOT_KEY]).catch(() => [[QUEUE_KEY, null], [SNAPSHOT_KEY, null]] as [string, string | null][]);
-    queue = q ? JSON.parse(q) : [];
-    snapshot = s ? JSON.parse(s) : null;
-    loaded = true;
-  }
+  await ensureLoaded();
   recompute();
   await sync();
 }
@@ -117,6 +121,7 @@ export function setHydrationTimeZone(tz: string) {
 }
 
 export async function addWater(volumeMl: number) {
+  await ensureLoaded(); // may be called from other screens before the Water tab has opened
   queue.push({ kind: 'add', client_id: Crypto.randomUUID(), volume_ml: volumeMl, consumed_at: new Date().toISOString() });
   recompute();
   await persist();

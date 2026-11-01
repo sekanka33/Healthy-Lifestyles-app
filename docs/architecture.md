@@ -192,3 +192,27 @@ plain-language reasons. Phase 9's recommendation engine reuses it.
 Move tab (forecast strip and "best time to get outside" for Premium). Location comes from a one-off
 low-accuracy GPS read or a place search, rounded on the device before it's sent. Guests see a
 labelled sample; tapping it opens Login/Register.
+
+## API (Phase 9 — calendar & recommendations)
+
+| Method & path | Auth | Purpose |
+|---|---|---|
+| `GET /calendar/status` | verified | Connected? free/busy and add-event permission |
+| `POST /calendar/connect` | verified (Free) | Google consent URL (free/busy scope only), state + PKCE |
+| `GET /calendar/oauth/callback` | Google redirect | Single-use state check, code exchange, encrypted token storage → app deep link |
+| `DELETE /calendar` | verified | Revoke at Google and delete the stored connection |
+| `GET /calendar/free-slots?date` | verified (Free) | Free time in the waking day (calendar busy blocks removed if connected) |
+| `GET /recommendations?date` | verified | Water breaks (all plans) + walk/jog/run ideas (Premium) with reasons |
+| `POST /recommendations/{id}/dismiss` | verified | Hide a suggestion |
+| `POST /recommendations/{id}/schedule` | Premium | Create a Google Calendar event — only on this explicit request; idempotent. 409 `needs_calendar_permission` + `auth_url` triggers incremental consent |
+| `GET/PATCH /me/scheduling-preferences` | verified | Wake/bed time, working hours, shortest useful slot, favourite activities & times |
+
+**Engine** (`services/scheduling.py`, pure): free slots = waking day − busy blocks − the past, ≥ the
+user's minimum. Water breaks go at slot starts, ≥ 90 min apart, max 4. Premium activity ideas are
+tried every 30 min inside slots outside working hours, scored by the Phase 8 outdoor rating
+(+15 for the user's favourite time band); "poor" weather is never suggested; the best three
+non-overlapping ideas are kept. Without a forecast the idea is still offered and says so. Free users
+are told how many ideas Premium would show. Refreshing replaces only unanswered suggestions —
+scheduled/dismissed ones are kept and never duplicated.
+
+Errors may now carry extra fields alongside `code`/`message` (e.g. `auth_url`).

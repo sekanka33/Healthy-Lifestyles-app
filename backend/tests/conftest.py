@@ -5,6 +5,8 @@ os.environ.setdefault("ENVIRONMENT", "test")
 os.environ.setdefault("DATABASE_URL", "sqlite://")
 os.environ.setdefault("EMAIL_PROVIDER", "disabled")
 os.environ.setdefault("JWT_SECRET", "test-secret-test-secret-test-secret")
+# Fixed, test-only Fernet key (never used anywhere real).
+os.environ.setdefault("TOKEN_ENCRYPTION_KEY", "dGVzdC1rZXktdGVzdC1rZXktdGVzdC1rZXktMTIzNDU=")
 
 import re  # noqa: E402
 

@@ -168,6 +168,18 @@ export type Forecast = { lat: number; lon: number; stale: boolean; sunrise: stri
 export type Place = { name: string; lat: number; lon: number };
 export type WeatherLocation = { lat: number | null; lon: number | null; name: string | null };
 
+export type CalendarStatus = { connected: boolean; status: string | null; can_read_free_busy: boolean; can_add_events: boolean };
+export type FreeSlots = { date: string; timezone: string; calendar_used: boolean; slots: { start: string; end: string; minutes: number }[] };
+export type Recommendation = {
+  id: string; kind: 'hydration' | Activity; title: string; reason: string; start: string; end: string;
+  status: 'suggested' | 'accepted' | 'dismissed' | 'scheduled'; weather: { temp_c: number; outdoor: Outdoor } | null;
+};
+export type Recommendations = { date: string; timezone: string; calendar_used: boolean; items: Recommendation[]; premium_ideas_available: number };
+export type SchedulingPrefs = {
+  working_hours_start: string | null; working_hours_end: string | null; sleep_start: string; sleep_end: string;
+  min_free_slot_minutes: number; preferred_activities: Activity[]; preferred_activity_times: ('morning' | 'afternoon' | 'evening')[];
+};
+
 // ------------------------------------------------------------------ errors
 
 export class ApiError extends Error {
@@ -176,6 +188,8 @@ export class ApiError extends Error {
     public code: string,
     message: string,
     public details?: { loc: (string | number)[]; msg: string }[],
+    /** Any extra fields the server attached to the error (e.g. `auth_url`). */
+    public extra: Record<string, unknown> = {},
   ) {
     super(message);
   }
@@ -268,7 +282,8 @@ async function raw<T>(method: string, path: string, body?: unknown, token?: stri
   const json = await res.json().catch(() => null);
   if (!res.ok) {
     const err = json?.error ?? {};
-    throw new ApiError(res.status, err.code ?? 'http_error', err.message ?? `Request failed (${res.status})`, err.details);
+    const { code, message, details, ...extra } = err;
+    throw new ApiError(res.status, code ?? 'http_error', message ?? `Request failed (${res.status})`, details, extra);
   }
   return json as T;
 }
@@ -375,4 +390,14 @@ export const api = {
   weatherLocation: () => authed<WeatherLocation>('GET', '/me/weather-location'),
   setWeatherLocation: (b: { lat: number; lon: number; name?: string | null }) => authed<WeatherLocation>('PUT', '/me/weather-location', b),
   clearWeatherLocation: () => authed<void>('DELETE', '/me/weather-location'),
+
+  calendarStatus: () => authed<CalendarStatus>('GET', '/calendar/status'),
+  connectCalendar: () => authed<{ auth_url: string }>('POST', '/calendar/connect'),
+  disconnectCalendar: () => authed<void>('DELETE', '/calendar'),
+  freeSlots: (date?: string) => authed<FreeSlots>('GET', `/calendar/free-slots${date ? `?date=${date}` : ''}`),
+  recommendations: (date?: string) => authed<Recommendations>('GET', `/recommendations${date ? `?date=${date}` : ''}`),
+  dismissRecommendation: (id: string) => authed<Recommendation>('POST', `/recommendations/${id}/dismiss`),
+  scheduleRecommendation: (id: string) => authed<Recommendation>('POST', `/recommendations/${id}/schedule`),
+  schedulingPrefs: () => authed<SchedulingPrefs>('GET', '/me/scheduling-preferences'),
+  setSchedulingPrefs: (b: Partial<SchedulingPrefs>) => authed<SchedulingPrefs>('PATCH', '/me/scheduling-preferences', b),
 };

@@ -29,6 +29,7 @@ function GuestProfile() {
     { title: 'Reminders', detail: 'Gentle hydration nudges with quiet hours.' },
     { title: 'Units & time zone', detail: 'Metric or imperial; your day resets at local midnight.' },
     { title: 'Premium', detail: 'Medication reminders, GPS workouts, weather-aware plans.' },
+    { title: 'Google Calendar', detail: 'Connect your calendar for water breaks and workouts that fit your day.' },
     { title: 'Payment history', detail: 'Every payment you make, in one place.' },
   ];
   return (
@@ -192,6 +193,11 @@ function SignedInProfile() {
           {deviceTz !== user.timezone && (
             <Button title={`Use device time zone (${deviceTz})`} variant="secondary" onPress={() => patch({ timezone: deviceTz })} />
           )}
+        </Section>
+
+        <Section title="Planning">
+          <Button title="Today's plan" variant="secondary" onPress={() => router.push('/plan')} />
+          <Button title="Google Calendar & plan settings" variant="ghost" onPress={() => router.push('/plan-settings')} />
         </Section>
 
         <Section title="Security">
