@@ -42,9 +42,10 @@ export default function TabsLayout() {
   return (
     <Tabs screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.background } }}
       tabBar={(props) => <TabBar {...props} />}>
+      {/* Order shown in the tab bar: Water, Move, History, Meds, Profile */}
       <Tabs.Screen name="index" />
-      <Tabs.Screen name="history" />
       <Tabs.Screen name="fitness" />
+      <Tabs.Screen name="history" />
       <Tabs.Screen name="medications" />
       <Tabs.Screen name="profile" />
     </Tabs>
