@@ -82,3 +82,17 @@ The mobile client refreshes single-flight, because two parallel refreshes would 
 UUID before calling the API, shows `server snapshot + queued adds − queued deletes`, and flushes the
 queue in order on launch, focus, foreground and after each tap. Undo of an unsynced tap just
 removes it from the queue.
+
+## API (Phase 5 — subscriptions)
+
+| Method & path | Auth | Purpose |
+|---|---|---|
+| `GET /billing/status` | any user | Plan + entitlement (status, expiry, renews?, store, sandbox?) |
+| `POST /billing/sync` | any user | After purchase/restore: server re-fetches from RevenueCat. Request body is ignored |
+| `GET /billing/transactions` | any user | Payment ledger (amount/currency exactly as the store reported) |
+| `GET /billing/transactions/{id}/receipt.pdf` | owner only | Receipt rendered on demand (ReportLab) |
+| `POST /billing/webhooks/revenuecat` | shared secret | Idempotent on event id; 503 on RevenueCat outage so it retries |
+
+Premium-only routes depend on `PremiumUser` (`require_premium`), which answers **402
+`premium_required`** unless the server-side entitlement is active, cancelled-but-paid or in grace
+period, and not past `expires_at`. See [subscriptions setup](subscriptions-setup.md).

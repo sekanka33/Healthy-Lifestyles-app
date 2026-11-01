@@ -85,6 +85,21 @@ export default function Profile() {
           <View style={styles.plan}><AppText style={styles.planText}>{user.plan === 'premium' ? 'Premium' : 'Free plan'}</AppText></View>
         </View>
 
+        <Section title="Your plan">
+          {user.plan === 'premium' ? (
+            <>
+              <AppText variant="caption">You have Premium. Thank you!</AppText>
+              <Button title="Subscription details" variant="secondary" onPress={() => router.push('/premium')} />
+            </>
+          ) : (
+            <>
+              <AppText variant="caption">Unlock medication reminders, GPS workouts and weather-aware plans.</AppText>
+              <Button title="Upgrade to Premium" onPress={() => router.push('/premium')} />
+            </>
+          )}
+          <Button title="Payment history" variant="ghost" onPress={() => router.push('/payments')} />
+        </Section>
+
         <Section title="About you">
           <TextField label="First name" value={firstName} onChangeText={setFirstName} autoComplete="given-name" />
           <TextField label="Last name" value={lastName} onChangeText={setLastName} autoComplete="family-name" />

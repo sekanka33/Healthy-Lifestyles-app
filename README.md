@@ -5,7 +5,7 @@ recommendations and Google Calendar planning (Premium, $11 USD / month).
 
 - `mobile/` — Expo SDK 58 · React Native · TypeScript · Expo Router
 - `backend/` — FastAPI · SQLAlchemy · Alembic · PostgreSQL
-- `docs/` — [design reference](docs/design-reference.md), [architecture](docs/architecture.md)
+- `docs/` — [design reference](docs/design-reference.md), [architecture](docs/architecture.md), [subscriptions setup](docs/subscriptions-setup.md)
 
 ## Status
 
@@ -15,8 +15,8 @@ recommendations and Google Calendar planning (Premium, $11 USD / month).
 | 2. Architecture, schema, dev environment | ✅ Done (4 tests passing) |
 | 3. Auth, profile, hydration | ✅ Done (30 backend tests passing) |
 | 4. Animated glass | ✅ Done (7 mobile unit tests passing) |
-| 5. Subscriptions | ⏳ Next |
-| 6. Medication | — |
+| 5. Subscriptions | ✅ Done (45 backend tests passing) — see [setup](docs/subscriptions-setup.md) |
+| 6. Medication | ⏳ Next |
 | 7. GPS fitness & health | — |
 | 8. Weather | — |
 | 9. Calendar & recommendations | — |

@@ -44,6 +44,8 @@ function RootNavigator() {
       <Stack.Protected guard={signedIn && verified}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="change-password" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="premium" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="payments" options={{ presentation: 'modal' }} />
       </Stack.Protected>
       <Stack.Protected guard={signedIn && !verified}>
         <Stack.Screen name="verify-email" />

@@ -53,6 +53,7 @@ class Settings(BaseSettings):
     revenuecat_secret_api_key: str | None = None
     revenuecat_webhook_auth: str | None = None
     revenuecat_premium_entitlement: str = "premium"
+    revenuecat_api_url: str = "https://api.revenuecat.com/v1"
 
     def validate_production(self) -> None:
         if self.environment != "production":
@@ -66,6 +67,10 @@ class Settings(BaseSettings):
             problems.append("PUBLIC_API_URL must use https")
         if self.email_provider == "disabled":
             problems.append("EMAIL_PROVIDER must be configured")
+        if not self.revenuecat_secret_api_key or not self.revenuecat_webhook_auth:
+            problems.append("REVENUECAT_SECRET_API_KEY and REVENUECAT_WEBHOOK_AUTH are required")
+        elif len(self.revenuecat_webhook_auth) < 32:
+            problems.append("REVENUECAT_WEBHOOK_AUTH must be a random value of at least 32 characters")
         if problems:
             raise RuntimeError("Insecure production configuration: " + "; ".join(problems))
 

@@ -3,6 +3,7 @@ import { createContext, ReactNode, use, useCallback, useEffect, useMemo, useStat
 
 import { api, ApiError, clearTokens, hasStoredSession, refreshSession, saveTokens, setSessionLostHandler, User } from './api';
 import { clearHydrationCache } from './hydration-store';
+import { forgetPurchaser, identifyPurchaser } from './purchases';
 
 const USER_CACHE_KEY = 'hl.user';
 
@@ -34,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const setUser = useCallback((u: User) => {
     setUserState(u);
+    void identifyPurchaser(u.id);
     AsyncStorage.setItem(USER_CACHE_KEY, JSON.stringify(u)).catch(() => undefined);
   }, []);
 
@@ -41,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await clearTokens();
     await AsyncStorage.removeItem(USER_CACHE_KEY).catch(() => undefined);
     await clearHydrationCache();
+    await forgetPurchaser();
     setUserState(null);
     setStatus('signedOut');
   }, []);
@@ -57,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (e) {
         const cached = await AsyncStorage.getItem(USER_CACHE_KEY).catch(() => null);
         if (e instanceof ApiError && e.isNetwork && cached) {
-          setUserState(JSON.parse(cached));
+          setUser(JSON.parse(cached));
           setStatus('signedIn');
         } else {
           await forgetSession();

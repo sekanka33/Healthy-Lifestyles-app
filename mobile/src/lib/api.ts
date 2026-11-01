@@ -53,6 +53,31 @@ export type DayDetail = DaySummary & { timezone: string; entries: HydrationEntry
 export type History = { timezone: string; days: DaySummary[] };
 export type Goal = { daily_goal_ml: number; effective_from: string | null };
 
+export type Entitlement = {
+  status: 'active' | 'grace_period' | 'billing_issue' | 'cancelled' | 'expired' | 'refunded';
+  product_id: string | null;
+  store: string | null;
+  expires_at: string | null;
+  will_renew: boolean;
+  environment: string;
+  last_verified_at: string | null;
+};
+export type BillingStatus = { plan: 'free' | 'premium'; entitlement: Entitlement | null };
+export type Payment = {
+  id: string;
+  provider: string;
+  product_id: string;
+  kind: string;
+  status: string;
+  amount: string | null; // decimal string, exactly as verified
+  currency: string | null;
+  purchased_at: string;
+  period_end: string | null;
+  environment: string;
+  receipt_number: string | null;
+  has_receipt: boolean;
+};
+
 // ------------------------------------------------------------------ errors
 
 export class ApiError extends Error {
@@ -212,4 +237,8 @@ export const api = {
   deleteEntry: (clientId: string) => authed<HydrationEntry>('DELETE', `/hydration/entries/${clientId}`),
   goal: () => authed<Goal>('GET', '/hydration/goal'),
   setGoal: (daily_goal_ml: number) => authed<Goal>('PUT', '/hydration/goal', { daily_goal_ml }),
+
+  billingStatus: () => authed<BillingStatus>('GET', '/billing/status'),
+  billingSync: () => authed<BillingStatus>('POST', '/billing/sync'),
+  payments: () => authed<Payment[]>('GET', '/billing/transactions'),
 };

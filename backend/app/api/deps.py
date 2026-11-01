@@ -56,3 +56,16 @@ def client_ip(request: Request) -> str:
 
 def user_agent(request: Request) -> str | None:
     return request.headers.get("user-agent")
+
+
+def require_premium(user: VerifiedUser, db: DB) -> User:
+    """Gate for Premium features. Reads only the server-side entitlement (see services/entitlements)."""
+    from app.services.entitlements import is_premium
+
+    if not is_premium(db, user):
+        raise HTTPException(status.HTTP_402_PAYMENT_REQUIRED,
+                            {"code": "premium_required", "message": "This feature needs Healthy Lifestyles Premium."})
+    return user
+
+
+PremiumUser = Annotated[User, Depends(require_premium)]
