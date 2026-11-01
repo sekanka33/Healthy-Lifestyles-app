@@ -64,7 +64,7 @@ def require_premium(user: VerifiedUser, db: DB) -> User:
 
     if not is_premium(db, user):
         raise HTTPException(status.HTTP_402_PAYMENT_REQUIRED,
-                            {"code": "premium_required", "message": "This feature needs Healthy Lifestyles Premium."})
+                            {"code": "premium_required", "message": "This feature needs LifePulse Premium."})
     return user
 
 

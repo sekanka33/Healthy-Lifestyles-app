@@ -80,7 +80,7 @@ class SmtpProvider(EmailProvider):
         s = get_settings()
         mime = MimeMessage()
         mime["From"], mime["To"], mime["Subject"] = s.email_from, msg.to, msg.subject
-        mime["Message-ID"] = make_msgid(domain="healthylifestyles")
+        mime["Message-ID"] = make_msgid(domain="lifepulse")
         for k, v in msg.headers.items():
             mime[k] = v
         mime.set_content(msg.text)

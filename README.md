@@ -1,4 +1,4 @@
-# Healthy Lifestyles — Wellness & Fitness App
+# LifePulse — Wellness & Fitness App
 
 Hydration tracking (Free) plus medication reminders, GPS workouts, weather-aware
 recommendations and Google Calendar planning (Premium, $11 USD / month).
@@ -76,7 +76,7 @@ allow the API port on private networks only:
 
 ```powershell
 Set-NetConnectionProfile -InterfaceAlias "Wi-Fi" -NetworkCategory Private
-New-NetFirewallRule -DisplayName "Healthy Lifestyles API (dev)" -Direction Inbound -Protocol TCP -LocalPort 8000 -Action Allow -Profile Private
+New-NetFirewallRule -DisplayName "LifePulse API (dev)" -Direction Inbound -Protocol TCP -LocalPort 8000 -Action Allow -Profile Private
 ```
 
 GPS background tracking, Health Connect, HealthKit and in-app purchases need a

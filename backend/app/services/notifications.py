@@ -108,7 +108,7 @@ def _job_export(db: Session, payload: dict) -> None:
         text=(f"Hi {user.first_name},\n\nAttached is a copy of the data we hold for your account (JSON).\n"
               "If you didn't ask for this, change your password and contact us.\n\n— " + get_settings().app_name),
         idempotency_key=f"export:{payload['key']}",
-        attachments=(email_svc.Attachment("healthy-lifestyles-export.json", "application/json", privacy.export_bytes(db, user)),),
+        attachments=(email_svc.Attachment("lifepulse-export.json", "application/json", privacy.export_bytes(db, user)),),
     )
 
 

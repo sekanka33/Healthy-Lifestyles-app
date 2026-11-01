@@ -85,7 +85,7 @@ export default function Premium() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.hero}>
           <View style={styles.logo}><DropIcon size={34} color={colors.navy} /></View>
-          <AppText variant="title" style={styles.center}>Healthy Lifestyles Premium</AppText>
+          <AppText variant="title" style={styles.center}>LifePulse Premium</AppText>
           <AppText variant="caption" style={styles.center}>Everything in Free, plus the tools to move more and stay on track.</AppText>
         </View>
 

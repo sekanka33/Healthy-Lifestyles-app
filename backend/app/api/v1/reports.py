@@ -49,7 +49,7 @@ Period = Literal["this_week", "this_month", "daily", "weekly", "monthly"]
 
 def _check_plan(db, user, kind: str) -> None:
     if kind in reports.PREMIUM_KINDS and not is_premium(db, user):
-        raise HTTPException(402, {"code": "premium_required", "message": "This report needs Healthy Lifestyles Premium."})
+        raise HTTPException(402, {"code": "premium_required", "message": "This report needs LifePulse Premium."})
 
 
 @router.get("/reports/{kind}.pdf", response_class=Response, responses={200: {"content": {"application/pdf": {}}}})

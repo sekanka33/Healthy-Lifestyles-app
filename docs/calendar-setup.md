@@ -6,7 +6,7 @@ opens Google's consent page in a secure browser session; Google tokens never rea
 ## 1. Google Cloud project
 1. console.cloud.google.com → create a project → **APIs & Services → Library** → enable
    **Google Calendar API**.
-2. **OAuth consent screen**: External, app name "Healthy Lifestyles", support email, privacy policy
+2. **OAuth consent screen**: External, app name "LifePulse", support email, privacy policy
    URL. Add the scopes below. While in "Testing", add your Google account as a test user.
 3. **Credentials → Create credentials → OAuth client ID → Web application**.
    Authorised redirect URI: `https://<your api>/api/v1/calendar/oauth/callback`
@@ -26,7 +26,7 @@ verification (Google reviews the privacy policy and a short demo video). `calend
 needs less review.
 
 ## Testing on a phone
-The redirect returns to the app via `healthylifestyles://calendar-connected`, which needs a
+The redirect returns to the app via `lifepulse://calendar-connected`, which needs a
 development or store build (the scheme is set in `app.json`). On a physical phone the backend must be
 reachable at `GOOGLE_REDIRECT_URI` — for local testing use a tunnel (e.g. `cloudflared` or `ngrok`)
 and register that HTTPS URL as the redirect URI.

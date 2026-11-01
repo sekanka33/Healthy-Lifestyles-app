@@ -1,13 +1,13 @@
 /**
  * Google Calendar consent runs in a secure browser session (ASWebAuthenticationSession / Custom Tabs).
- * The backend does the code exchange and redirects to `healthylifestyles://calendar-connected?status=…`,
+ * The backend does the code exchange and redirects to `lifepulse://calendar-connected?status=…`,
  * which closes the session. Tokens never touch the app.
  */
 import * as WebBrowser from 'expo-web-browser';
 
 import { api } from './api';
 
-const RETURN_URL = 'healthylifestyles://calendar-connected';
+const RETURN_URL = 'lifepulse://calendar-connected';
 
 export type ConnectOutcome = 'ok' | 'denied' | 'cancelled' | 'error';
 
@@ -15,7 +15,7 @@ export async function runGoogleConsent(authUrl?: string): Promise<ConnectOutcome
   const url = authUrl ?? (await api.connectCalendar()).auth_url;
   const result = await WebBrowser.openAuthSessionAsync(url, RETURN_URL);
   if (result.type !== 'success') return 'cancelled';
-  const status = new URL(result.url.replace('healthylifestyles://', 'https://app/')).searchParams.get('status');
+  const status = new URL(result.url.replace('lifepulse://', 'https://app/')).searchParams.get('status');
   return status === 'ok' || status === 'denied' ? status : 'error';
 }
 

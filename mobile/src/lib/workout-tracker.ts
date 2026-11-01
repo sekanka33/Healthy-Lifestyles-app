@@ -124,7 +124,7 @@ async function startUpdates(w: ActiveWorkout) {
     showsBackgroundLocationIndicator: true,
     foregroundService: {
       notificationTitle: 'Workout in progress',
-      notificationBody: 'Healthy Lifestyles is recording your route.',
+      notificationBody: 'LifePulse is recording your route.',
       notificationColor: '#04C3D5',
     },
   };

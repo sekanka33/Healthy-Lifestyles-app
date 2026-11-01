@@ -15,10 +15,10 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     environment: Literal["development", "test", "production"] = "development"
-    app_name: str = "Healthy Lifestyles"
+    app_name: str = "LifePulse"
     # Trusted public URLs — links in emails are built ONLY from these, never from request headers.
     public_api_url: str = "http://localhost:8000"
-    app_deep_link_base: str = "healthylifestyles://"
+    app_deep_link_base: str = "lifepulse://"
     support_email: str = "support@example.com"
 
     # Browser origins allowed to call the API (only the web build needs this; native apps don't use CORS).
@@ -45,7 +45,7 @@ class Settings(BaseSettings):
 
     # Email
     email_provider: Literal["smtp", "resend", "disabled"] = "disabled"
-    email_from: str = "Healthy Lifestyles <no-reply@example.com>"
+    email_from: str = "LifePulse <no-reply@example.com>"
     smtp_host: str = "localhost"
     smtp_port: int = 1025
     smtp_username: str | None = None

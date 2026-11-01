@@ -22,7 +22,7 @@ _hasher = PasswordHasher()
 _DUMMY_HASH = _hasher.hash("timing-equaliser-not-a-real-password")
 
 JWT_ALG = "HS256"
-JWT_AUDIENCE = "healthy-lifestyles-app"
+JWT_AUDIENCE = "lifepulse-app"
 
 
 def hash_password(password: str) -> str:

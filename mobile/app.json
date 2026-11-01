@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "Healthy Lifestyles",
-    "slug": "healthy-lifestyles",
+    "name": "LifePulse",
+    "slug": "lifepulse",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "healthylifestyles",
+    "scheme": "lifepulse",
     "userInterfaceStyle": "light",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.healthylifestyles.app",
+      "bundleIdentifier": "com.lifepulse.app",
       "supportsTablet": false
     },
     "android": {
@@ -20,7 +20,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.healthylifestyles.app"
+      "package": "com.lifepulse.app"
     },
     "web": {
       "output": "server",
@@ -46,7 +46,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Healthy Lifestyles uses your location to record the route, distance and pace of your walks, jogs and runs.",
+          "locationWhenInUsePermission": "LifePulse uses your location to record the route, distance and pace of your walks, jogs and runs.",
           "locationAlwaysAndWhenInUsePermission": "Allow location while a workout is recording so your route is still tracked when the screen is locked. Location is only used during workouts you start.",
           "isIosBackgroundLocationEnabled": true,
           "isAndroidBackgroundLocationEnabled": true,

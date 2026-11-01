@@ -81,7 +81,7 @@ def test_connect_uses_pkce_minimal_scope_and_encrypts_tokens(client, verified, g
     assert url.startswith("https://accounts.google.com/o/oauth2/v2/auth?")
     assert q["scope"] == [google.SCOPE_FREEBUSY]  # least privilege at first connect
     assert q["code_challenge_method"] == ["S256"] and q["access_type"] == ["offline"]
-    assert res.status_code == 302 and res.headers["location"] == "healthylifestyles://calendar-connected?status=ok"
+    assert res.status_code == 302 and res.headers["location"] == "lifepulse://calendar-connected?status=ok"
     with db_factory() as db:
         c = db.execute(select(OAuthConnection)).scalar_one()
         st = db.execute(select(OAuthState)).scalar_one()

@@ -17,7 +17,7 @@ def export(user: AnyUser, db: DB):
     """Everything we hold about you, as JSON (no passwords, tokens or codes). Works on any plan."""
     rate_limit.hit(db, f"export:user:{user.id}", limit=5, window_seconds=3600)
     return Response(privacy.export_bytes(db, user), media_type="application/json", headers={
-        "Content-Disposition": 'attachment; filename="healthy-lifestyles-export.json"', "Cache-Control": "private, no-store"})
+        "Content-Disposition": 'attachment; filename="lifepulse-export.json"', "Cache-Control": "private, no-store"})
 
 
 @router.post("/export/email", status_code=status.HTTP_202_ACCEPTED)

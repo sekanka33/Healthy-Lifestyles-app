@@ -55,4 +55,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build the production image
-        run: docker build -t healthy-lifestyles-api ./backend
+        run: docker build -t lifepulse-api ./backend

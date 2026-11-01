@@ -51,7 +51,7 @@ def export(db: Session, user: User) -> dict:
     meds = list(db.execute(select(Medication).where(Medication.user_id == uid)).scalars())
     data = {
         "exported_at": datetime.now().astimezone().isoformat(),
-        "format": "healthy-lifestyles-export/1",
+        "format": "lifepulse-export/1",
         "account": _plain(user),
         "preferences": rows(UserPreferences, UserPreferences.user_id == uid),
         "notification_preferences": rows(NotificationPreferences, NotificationPreferences.user_id == uid),
