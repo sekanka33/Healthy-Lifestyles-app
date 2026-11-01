@@ -47,6 +47,10 @@ emails locally, run [Mailpit](https://mailpit.axllent.org/) and set `EMAIL_PROVI
 
 No PostgreSQL yet? For a quick local try-out, `DATABASE_URL=sqlite:///./dev.db` works too.
 
+**Test accounts:** `python -m app.scripts.seed_demo_accounts` creates (or resets) a verified Free
+account `free.demo@example.com` and a Premium one `premium.demo@example.com` (promotional
+entitlement, no expiry) and prints fresh passwords. It refuses to run with `ENVIRONMENT=production`.
+
 To run the migration test against PostgreSQL too, set `TEST_POSTGRES_URL` to an
 **empty, disposable** database.
 
