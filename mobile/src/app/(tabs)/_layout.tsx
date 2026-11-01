@@ -8,7 +8,7 @@ import { AppText } from '@/components/ui/text';
 import { colors, fonts } from '@/theme/tokens';
 
 const ICONS = { index: DropIcon, history: ChartIcon, fitness: RunIcon, medications: PillIcon, profile: PersonIcon } as const;
-const LABELS = { index: 'Water', history: 'History', fitness: 'Move', medications: 'Meds', profile: 'Profile' } as const;
+const LABELS = { index: 'Water', history: 'History', fitness: 'Fitness', medications: 'Meds', profile: 'Profile' } as const;
 
 /** White bar, large top radius, active tab with a short rounded underline (per the reference). */
 function TabBar({ state, navigateToTab }: BottomTabBarProps) {
@@ -42,7 +42,7 @@ export default function TabsLayout() {
   return (
     <Tabs screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.background } }}
       tabBar={(props) => <TabBar {...props} />}>
-      {/* Order shown in the tab bar: Water, Move, History, Meds, Profile */}
+      {/* Order shown in the tab bar: Water, Fitness, History, Meds, Profile */}
       <Tabs.Screen name="index" />
       <Tabs.Screen name="fitness" />
       <Tabs.Screen name="history" />

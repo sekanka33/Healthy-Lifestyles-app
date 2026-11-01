@@ -189,7 +189,7 @@ is unreachable the last copy is served for up to 6 h with `stale: true`, then 50
 plain-language reasons. Phase 9's recommendation engine reuses it.
 
 **Mobile:** a weather chip on the Water tab (with a hot-day hydration tip) and a weather card on the
-Move tab (forecast strip and "best time to get outside" for Premium). Location comes from a one-off
+Fitness tab (forecast strip and "best time to get outside" for Premium). Location comes from a one-off
 low-accuracy GPS read or a place search, rounded on the device before it's sent. Guests see a
 labelled sample; tapping it opens Login/Register.
 

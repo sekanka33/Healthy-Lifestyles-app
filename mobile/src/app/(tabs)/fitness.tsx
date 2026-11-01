@@ -135,7 +135,7 @@ export default function Fitness() {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
         <ScrollView contentContainerStyle={styles.content}>
-          <AppText variant="title">Move</AppText>
+          <AppText variant="title">Fitness</AppText>
           <WeatherCard state={weather} units={units} onChooseLocation={chooseLocation} onRetry={reloadWeather}
             sample={isGuest ? SAMPLE_WEATHER : undefined} />
           <Pressable accessibilityRole="button" onPress={gate(() => router.push('/plan'))} style={styles.planCard}>
@@ -226,7 +226,7 @@ export default function Fitness() {
           await Promise.all([load(), reloadWeather()]);
           setRefreshing(false);
         }} />}>
-        <AppText variant="title">Move</AppText>
+        <AppText variant="title">Fitness</AppText>
         <WeatherCard state={weather} units={units} onChooseLocation={chooseLocation} onRetry={reloadWeather} />
         <Pressable accessibilityRole="button" onPress={gate(() => router.push('/plan'))} style={styles.planCard}>
         <View style={styles.flex}>

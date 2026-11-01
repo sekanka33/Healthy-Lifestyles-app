@@ -275,7 +275,7 @@ async function completeFinish(): Promise<Workout> {
   return saved;
 }
 
-/** Call on launch / when the Move tab opens: uploads, retries a pending finish, revives GPS. */
+/** Call on launch / when the Fitness tab opens: uploads, retries a pending finish, revives GPS. */
 export async function resumePendingWork(): Promise<Workout | null> {
   await locked(load);
   if (!current) return null;
