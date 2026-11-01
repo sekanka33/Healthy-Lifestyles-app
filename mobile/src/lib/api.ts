@@ -151,6 +151,23 @@ export type FitnessSummary = {
   distance_km: number; active_minutes: number; calories_kcal_estimate: number | null; goals: GoalProgress[];
 };
 
+export type Outdoor = { score: number; label: 'good' | 'fair' | 'poor'; reasons: string[] };
+export type WeatherCondition = { code: number; main: string; description: string; icon: string };
+export type CurrentWeather = {
+  lat: number; lon: number; place_name: string | null; observed_at: string | null;
+  temp_c: number | null; feels_like_c: number | null; humidity: number | null; wind_mps: number | null;
+  wind_gust_mps: number | null; rain_mm_1h: number | null; condition: WeatherCondition;
+  sunrise: string | null; sunset: string | null; is_day: boolean; outdoor: Outdoor;
+  hydration_tip: string | null; stale: boolean;
+};
+export type ForecastStep = {
+  at: string; temp_c: number | null; feels_like_c: number | null; humidity: number | null; wind_mps: number | null;
+  pop: number | null; rain_mm: number | null; condition: WeatherCondition; is_day: boolean; outdoor: Outdoor;
+};
+export type Forecast = { lat: number; lon: number; stale: boolean; sunrise: string | null; sunset: string | null; steps: ForecastStep[]; best_time: string | null };
+export type Place = { name: string; lat: number; lon: number };
+export type WeatherLocation = { lat: number | null; lon: number | null; name: string | null };
+
 // ------------------------------------------------------------------ errors
 
 export class ApiError extends Error {
@@ -351,4 +368,11 @@ export const api = {
   removeFitnessGoal: (id: string) => authed<void>('DELETE', `/fitness/goals/${id}`),
   fitnessProfile: () => authed<{ body_weight_kg: number | null }>('GET', '/me/fitness-profile'),
   setFitnessProfile: (body_weight_kg: number | null) => authed<{ body_weight_kg: number | null }>('PUT', '/me/fitness-profile', { body_weight_kg }),
+
+  currentWeather: () => authed<CurrentWeather>('GET', '/weather/current'),
+  forecast: (hours = 24) => authed<Forecast>('GET', `/weather/forecast?hours=${hours}`),
+  searchPlaces: (q: string) => authed<Place[]>('GET', `/weather/places?q=${encodeURIComponent(q)}`),
+  weatherLocation: () => authed<WeatherLocation>('GET', '/me/weather-location'),
+  setWeatherLocation: (b: { lat: number; lon: number; name?: string | null }) => authed<WeatherLocation>('PUT', '/me/weather-location', b),
+  clearWeatherLocation: () => authed<void>('DELETE', '/me/weather-location'),
 };

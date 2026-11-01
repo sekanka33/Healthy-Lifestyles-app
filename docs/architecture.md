@@ -167,3 +167,28 @@ open. Requires a development build.
 
 **Not yet done:** reading workouts from Health Connect / Apple Health on the phone (needs the native
 health modules and a device to test). The backend import and connection endpoints are ready for it.
+
+## API (Phase 8 — weather)
+
+| Method & path | Auth | Purpose |
+|---|---|---|
+| `GET /weather/current?lat&lon` | verified (Free) | Current conditions + outdoor rating + hot-weather hydration tip |
+| `GET /weather/forecast?lat&lon&hours` | Premium | 3-hourly forecast (≤ 120 h), each step rated for outdoor exercise, plus the best daylight slot |
+| `GET /weather/places?q=` | verified | Town/city search (OpenWeather geocoding) |
+| `GET/PUT/DELETE /me/weather-location` | verified | Saved location, stored at 2 dp (~1 km) |
+
+Without `lat`/`lon` the saved location is used (409 `no_location` if none). Ad-hoc coordinates are
+rounded and never stored on the profile. OpenWeather (free plan: `/data/2.5/weather`,
+`/data/2.5/forecast`, `/geo/1.0/direct`) is called only by the backend; responses are cached in
+`weather_cache` per rounded location (current 10 min, forecast 30 min, places 7 days). If OpenWeather
+is unreachable the last copy is served for up to 6 h with `stale: true`, then 503 `weather_unavailable`.
+
+**Outdoor rating** (`services/weather_rules.py`, pure): starts at 100 and subtracts for thunder
+(always "poor"), rain/drizzle/chance of rain, snow, fog, heat (≥ 30 / ≥ 35 °C feels-like), cold
+(≤ 3 / ≤ −5 °C), wind (≥ 9 / ≥ 14 m/s) and darkness; ≥ 70 good, ≥ 40 fair, else poor, with
+plain-language reasons. Phase 9's recommendation engine reuses it.
+
+**Mobile:** a weather chip on the Water tab (with a hot-day hydration tip) and a weather card on the
+Move tab (forecast strip and "best time to get outside" for Premium). Location comes from a one-off
+low-accuracy GPS read or a place search, rounded on the device before it's sent. Guests see a
+labelled sample; tapping it opens Login/Register.

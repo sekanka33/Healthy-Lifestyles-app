@@ -4,9 +4,11 @@ import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleS
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
+import { WeatherCard } from '@/components/weather-card';
 import { AppText } from '@/components/ui/text';
 import { useAccountGate } from '@/hooks/use-account-gate';
-import { Activity, api, ApiError, FitnessSummary, Workout } from '@/lib/api';
+import { useWeather } from '@/hooks/use-weather';
+import { Activity, api, ApiError, CurrentWeather, FitnessSummary, Forecast, Workout } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { ACTIVITY_LABEL, SOURCE_LABEL } from '@/lib/fitness-labels';
 import { formatDistance, formatDuration, formatPace } from '@/lib/geo';
@@ -30,6 +32,15 @@ const ACTIVITIES: { value: Activity; label: string }[] = [
   { value: 'running', label: 'Run' },
 ];
 
+const SAMPLE_WEATHER: { current: CurrentWeather; forecast: Forecast | null } = {
+  current: {
+    lat: 0, lon: 0, place_name: 'Your area', observed_at: null, temp_c: 21, feels_like_c: 21, humidity: 45, wind_mps: 3,
+    wind_gust_mps: null, rain_mm_1h: 0, condition: { code: 801, main: 'Clouds', description: 'few clouds', icon: '02d' },
+    sunrise: null, sunset: null, is_day: true, hydration_tip: null, stale: false,
+    outdoor: { score: 100, label: 'good', reasons: ['Great conditions'] },
+  },
+  forecast: null,
+};
 const SAMPLE_SUMMARY = { workouts: 3, distance_km: 8.4, active_minutes: 95 };
 const SAMPLE_WORKOUTS = [
   { id: 's1', label: 'Walk', when: 'Today, 07:10', distance: '3.20 km', time: '38:12' },
@@ -52,6 +63,9 @@ export default function Fitness() {
   const [busy, setBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [, setTick] = useState(0);
+  // Current weather is free for any verified account; the hourly forecast is Premium.
+  const { state: weather, reload: reloadWeather } = useWeather({ enabled: !isGuest && !active, withForecast: premium });
+  const chooseLocation = gate(() => router.push('/weather-location'));
 
   const load = useCallback(async () => {
     if (!premium) return;
@@ -122,6 +136,8 @@ export default function Fitness() {
       <SafeAreaView style={styles.safe} edges={['top']}>
         <ScrollView contentContainerStyle={styles.content}>
           <AppText variant="title">Move</AppText>
+          <WeatherCard state={weather} units={units} onChooseLocation={chooseLocation} onRetry={reloadWeather}
+            sample={isGuest ? SAMPLE_WEATHER : undefined} />
           <View style={styles.card}>
             <AppText variant="heading">Track walks, jogs & runs</AppText>
             <AppText variant="caption">
@@ -200,10 +216,11 @@ export default function Fitness() {
       <ScrollView contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => {
           setRefreshing(true);
-          await load();
+          await Promise.all([load(), reloadWeather()]);
           setRefreshing(false);
         }} />}>
         <AppText variant="title">Move</AppText>
+        <WeatherCard state={weather} units={units} onChooseLocation={chooseLocation} onRetry={reloadWeather} />
         <AppText variant="heading">Start a workout</AppText>
         <View style={styles.startRow}>
           {ACTIVITIES.map((a) => (

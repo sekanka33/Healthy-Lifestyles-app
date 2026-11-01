@@ -18,8 +18,8 @@ recommendations and Google Calendar planning (Premium, $11 USD / month).
 | 5. Subscriptions | ✅ Done (45 backend tests passing) — see [setup](docs/subscriptions-setup.md) |
 | 6. Medication | ✅ Done (70 backend tests passing) |
 | 7. GPS fitness & health | ✅ GPS workouts, goals, health import API (84 backend tests) — device health-app sync pending |
-| 8. Weather | ⏳ Next |
-| 9. Calendar & recommendations | — |
+| 8. Weather | ✅ Done (93 backend tests passing) |
+| 9. Calendar & recommendations | ⏳ Next |
 | 10. Reports, email, privacy, deployment | — |
 
 ## Prerequisites

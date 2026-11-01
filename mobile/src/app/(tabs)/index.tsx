@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { AppState, Modal, Platform, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,13 +9,25 @@ import { Button } from '@/components/ui/button';
 import { AppText } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import { WaterGlass } from '@/components/water-glass';
+import { WeatherChip } from '@/components/weather-card';
 import { useAccountGate } from '@/hooks/use-account-gate';
 import { useCountUp } from '@/hooks/use-count-up';
+import { useWeather, WeatherState } from '@/hooks/use-weather';
 import { useAuth } from '@/lib/auth-context';
 import { addWater, initHydration, setHydrationTimeZone, sync, undoLast, useHydration } from '@/lib/hydration-store';
 import { colors, fonts, radius } from '@/theme/tokens';
 
 const CHIPS = [100, 250, 500];
+const SAMPLE_WEATHER_CHIP: WeatherState = {
+  status: 'ready',
+  forecast: null,
+  current: {
+    lat: 0, lon: 0, place_name: null, observed_at: null, temp_c: 21, feels_like_c: 21, humidity: 45, wind_mps: 3,
+    wind_gust_mps: null, rain_mm_1h: 0, condition: { code: 800, main: 'Clear', description: 'clear sky', icon: '01d' },
+    sunrise: null, sunset: null, is_day: true, hydration_tip: null, stale: false,
+    outdoor: { score: 100, label: 'good', reasons: [] },
+  },
+};
 /** What guests see: a clearly labelled example, never real data. */
 const SAMPLE = { totalMl: 1250, goalMl: 2000, entries: [{}], pendingCount: 0, syncing: false, lastError: null };
 
@@ -28,6 +40,7 @@ export default function HydrationScreen() {
   const { isGuest, gate } = useAccountGate();
   const live = useHydration();
   const h = isGuest ? SAMPLE : live;
+  const { state: weather } = useWeather({ enabled: !isGuest, withForecast: false });
   const { width, height } = useWindowDimensions();
   const [amount, setAmount] = useState(250);
   const [customOpen, setCustomOpen] = useState(false);
@@ -53,13 +66,17 @@ export default function HydrationScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <AppText variant="heading">{isGuest ? 'Welcome' : `Hi ${user?.first_name}`}</AppText>
-        {isGuest ? (
-          <View style={styles.badge} accessibilityLabel="Sample data">
-            <AppText style={styles.badgeText}>Sample</AppText>
-          </View>
-        ) : (
-          <SyncBadge pending={h.pendingCount} syncing={h.syncing} />
-        )}
+        <View style={styles.headerRight}>
+          <WeatherChip state={isGuest ? SAMPLE_WEATHER_CHIP : weather} units={user?.units ?? 'metric'}
+            onPress={gate(() => router.push('/weather-location'))} />
+          {isGuest ? (
+            <View style={styles.badge} accessibilityLabel="Sample data">
+              <AppText style={styles.badgeText}>Sample</AppText>
+            </View>
+          ) : (
+            <SyncBadge pending={h.pendingCount} syncing={h.syncing} />
+          )}
+        </View>
       </View>
 
       <View style={styles.center}>
@@ -72,6 +89,10 @@ export default function HydrationScreen() {
             ? 'Sign in to track your own water'
             : remaining > 0 ? `${remaining.toLocaleString()} ml to your ${h.goalMl.toLocaleString()} ml goal` : 'Goal reached — nice work!'}
         </AppText>
+
+        {!isGuest && weather.status === 'ready' && weather.current.hydration_tip && (
+          <AppText variant="caption" style={styles.status}>💧 {weather.current.hydration_tip}</AppText>
+        )}
 
         <View style={styles.glass}>
           <WaterGlass width={glassWidth} progress={h.goalMl ? h.totalMl / h.goalMl : 0} />
@@ -145,6 +166,7 @@ function CustomAmount({ visible, onClose, onAdd }: { visible: boolean; onClose: 
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingTop: 8 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 6 },
   totalRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
