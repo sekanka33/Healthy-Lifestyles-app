@@ -37,3 +37,12 @@ export function UndoIcon({ size = 22, color }: P) {
     </Svg>
   );
 }
+
+export function PillIcon({ size = 24, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path d="M8.5 20.5a5 5 0 0 1-3.5-8.5l7-7a5 5 0 0 1 7 7l-7 7a5 5 0 0 1-3.5 1.5Z" fill={color} />
+      <Path d="M8.6 8.4l7 7" stroke="#FFFFFF" strokeWidth={1.8} strokeLinecap="round" />
+    </Svg>
+  );
+}

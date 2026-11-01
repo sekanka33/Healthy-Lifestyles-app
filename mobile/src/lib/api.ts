@@ -78,6 +78,47 @@ export type Payment = {
   has_receipt: boolean;
 };
 
+export type ScheduleType = 'daily' | 'specific_days' | 'every_n_days' | 'as_needed';
+export type Medication = {
+  id: string;
+  name: string;
+  dosage_instructions: string;
+  notes: string | null;
+  schedule_type: ScheduleType;
+  times: string[];
+  days_of_week: number[] | null;
+  interval_days: number | null;
+  timezone: string;
+  start_date: string;
+  end_date: string | null;
+  reminders_enabled: boolean;
+  discontinued_at: string | null;
+  active: boolean;
+  created_at: string;
+};
+export type MedicationInput = Partial<Omit<Medication, 'id' | 'discontinued_at' | 'active' | 'created_at'>>;
+export type DoseState = 'taken' | 'skipped' | 'missed' | 'upcoming' | 'unrecorded';
+export type ScheduledDose = {
+  medication_id: string;
+  medication_name: string;
+  dosage_instructions: string;
+  scheduled_for: string;
+  status: DoseState;
+  recorded_at: string | null;
+  note: string | null;
+};
+export type AdherenceRow = {
+  medication_id: string;
+  medication_name: string;
+  scheduled: number;
+  taken: number;
+  skipped: number;
+  missed: number;
+  unrecorded: number;
+  as_needed_taken: number;
+  adherence: number | null;
+};
+
 // ------------------------------------------------------------------ errors
 
 export class ApiError extends Error {
@@ -241,4 +282,24 @@ export const api = {
   billingStatus: () => authed<BillingStatus>('GET', '/billing/status'),
   billingSync: () => authed<BillingStatus>('POST', '/billing/sync'),
   payments: () => authed<Payment[]>('GET', '/billing/transactions'),
+
+  medications: () => authed<Medication[]>('GET', '/medications'),
+  medication: (id: string) => authed<Medication>('GET', `/medications/${id}`),
+  createMedication: (b: MedicationInput) => authed<Medication>('POST', '/medications', b),
+  updateMedication: (id: string, b: MedicationInput) => authed<Medication>('PATCH', `/medications/${id}`, b),
+  discontinueMedication: (id: string) => authed<Medication>('POST', `/medications/${id}/discontinue`),
+  resumeMedication: (id: string) => authed<Medication>('POST', `/medications/${id}/resume`),
+  deleteMedication: (id: string) => authed<void>('DELETE', `/medications/${id}`),
+  medicationSchedule: (from?: string, to?: string) => {
+    const q = new URLSearchParams();
+    if (from) q.set('from', from);
+    if (to) q.set('to', to);
+    const qs = q.toString();
+    return authed<ScheduledDose[]>('GET', `/medications/schedule${qs ? `?${qs}` : ''}`);
+  },
+  recordDose: (id: string, scheduled_for: string, status: 'taken' | 'skipped' | 'missed') =>
+    authed<unknown>('PUT', `/medications/${id}/doses`, { scheduled_for, status }),
+  clearDose: (id: string, scheduled_for: string) =>
+    authed<void>('DELETE', `/medications/${id}/doses?scheduled_for=${encodeURIComponent(scheduled_for)}`),
+  adherence: () => authed<{ from_date: string; to_date: string; medications: AdherenceRow[] }>('GET', '/medications/adherence'),
 };

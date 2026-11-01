@@ -3,12 +3,12 @@ import type { BottomTabBarProps } from 'expo-router/tabs';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ChartIcon, DropIcon, PersonIcon } from '@/components/icons';
+import { ChartIcon, DropIcon, PersonIcon, PillIcon } from '@/components/icons';
 import { AppText } from '@/components/ui/text';
 import { colors, fonts } from '@/theme/tokens';
 
-const ICONS = { index: DropIcon, history: ChartIcon, profile: PersonIcon } as const;
-const LABELS = { index: 'Water', history: 'History', profile: 'Profile' } as const;
+const ICONS = { index: DropIcon, history: ChartIcon, medications: PillIcon, profile: PersonIcon } as const;
+const LABELS = { index: 'Water', history: 'History', medications: 'Meds', profile: 'Profile' } as const;
 
 /** White bar, large top radius, active tab with a short rounded underline (per the reference). */
 function TabBar({ state, navigateToTab }: BottomTabBarProps) {
@@ -44,6 +44,7 @@ export default function TabsLayout() {
       tabBar={(props) => <TabBar {...props} />}>
       <Tabs.Screen name="index" />
       <Tabs.Screen name="history" />
+      <Tabs.Screen name="medications" />
       <Tabs.Screen name="profile" />
     </Tabs>
   );

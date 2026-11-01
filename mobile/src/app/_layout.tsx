@@ -4,13 +4,15 @@ import {
   Nunito_800ExtraBold,
   useFonts,
 } from '@expo-google-fonts/nunito';
-import { Stack } from 'expo-router';
+import * as Notifications from 'expo-notifications';
+import { router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, useAuth } from '@/lib/auth-context';
+import { isMedicationReminder } from '@/lib/medication-reminders';
 import { colors } from '@/theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
@@ -35,6 +37,14 @@ function RootNavigator() {
     if (status !== 'loading') SplashScreen.hideAsync();
   }, [status]);
 
+  // Tapping a medication reminder opens the Meds tab (guests are routed to sign-in by the guard).
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      if (isMedicationReminder(response)) router.navigate('/medications');
+    });
+    return () => sub.remove();
+  }, []);
+
   if (status === 'loading') return null;
   const signedIn = status === 'signedIn';
   const verified = !!user?.email_verified;
@@ -49,6 +59,7 @@ function RootNavigator() {
         <Stack.Screen name="change-password" options={{ presentation: 'modal' }} />
         <Stack.Screen name="premium" options={{ presentation: 'modal' }} />
         <Stack.Screen name="payments" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="medication-edit" options={{ presentation: 'modal' }} />
       </Stack.Protected>
       <Stack.Protected guard={signedIn && !verified}>
         <Stack.Screen name="verify-email" />

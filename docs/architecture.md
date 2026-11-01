@@ -107,3 +107,26 @@ rows) goes through `useAccountGate()` and opens the sign-in screen (modal, with 
 account and a "Keep browsing" exit). Guests never call account APIs. Account-only screens
 (`premium`, `payments`, `change-password`) are guarded by `Stack.Protected`. After sign-in the modal
 closes onto the same tab with real data; a new account goes through email verification first.
+
+## API (Phase 6 — medication, Premium)
+
+| Method & path | Auth | Purpose |
+|---|---|---|
+| `GET /medications` | verified | List (kept visible after a plan lapses) |
+| `POST /medications` · `PATCH/GET /medications/{id}` | Premium | Create / edit; instructions stored verbatim |
+| `POST /medications/{id}/discontinue` · `/resume` | Premium | Stop future doses & reminders, keep history |
+| `DELETE /medications/{id}` | verified | Permanently delete it and its dose history (always allowed) |
+| `GET /medications/schedule?from&to` | Premium | Every dose in a local-date range with status (max 93 days) |
+| `PUT /medications/{id}/doses` | Premium | Record or correct taken / skipped / missed for one dose time |
+| `DELETE /medications/{id}/doses?scheduled_for=` | Premium | Undo a recorded outcome |
+| `GET /medications/adherence?from&to` | Premium | Per-medication taken / skipped / missed / not-logged counts |
+
+**Rules.** Schedules: daily, specific weekdays, every N days, or as needed; times are wall-clock in the
+medication's IANA zone, so 08:00 stays 08:00 across DST (a time inside a spring-forward gap moves
+forward by the gap; an ambiguous fall-back time is used once). A dose can only be recorded at a real
+scheduled time (or "now or earlier" for as-needed), at most 30 days back. A dose with no record is
+reported as **unrecorded** — never assumed taken and never counted as missed.
+
+**Reminders** are on-device local notifications (`expo-notifications`) for the next 7 days, capped at
+60 (iOS allows 64), re-planned whenever medications change or the Meds tab opens, and cleared on sign
+out or when Premium lapses. The text is generic so medication names never appear on the lock screen.

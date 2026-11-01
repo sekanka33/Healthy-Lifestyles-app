@@ -3,6 +3,7 @@ import { createContext, ReactNode, use, useCallback, useEffect, useMemo, useStat
 
 import { api, ApiError, clearTokens, hasStoredSession, refreshSession, saveTokens, setSessionLostHandler, User } from './api';
 import { clearHydrationCache } from './hydration-store';
+import { clearMedicationReminders } from './medication-reminders';
 import { forgetPurchaser, identifyPurchaser } from './purchases';
 
 const USER_CACHE_KEY = 'hl.user';
@@ -44,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await AsyncStorage.removeItem(USER_CACHE_KEY).catch(() => undefined);
     await clearHydrationCache();
     await forgetPurchaser();
+    await clearMedicationReminders().catch(() => undefined); // never remind a signed-out device
     setUserState(null);
     setStatus('signedOut');
   }, []);
