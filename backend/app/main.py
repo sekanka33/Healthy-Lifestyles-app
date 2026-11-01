@@ -2,6 +2,7 @@ import logging
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -27,6 +28,21 @@ def create_app() -> FastAPI:
         title=f"{settings.app_name} API",
         version="0.1.0",
         docs_url="/docs" if settings.environment != "production" else None,
+    )
+
+    # Development: allow the Expo web dev server from this machine or the local network.
+    # Production: only the origins listed in CORS_ORIGINS.
+    dev_origins = None
+    if settings.environment != "production":
+        dev_origins = r"https?://(localhost|127\.0\.0\.1|10(\.\d{1,3}){3}|192\.168(\.\d{1,3}){2}|172\.(1[6-9]|2\d|3[01])(\.\d{1,3}){2})(:\d+)?"
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_origin_regex=dev_origins,
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+        allow_headers=["Authorization", "Content-Type", "Accept"],
+        allow_credentials=False,  # bearer tokens, no cookies
+        max_age=600,
     )
 
     @app.exception_handler(StarletteHTTPException)

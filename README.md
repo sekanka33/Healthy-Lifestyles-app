@@ -65,9 +65,18 @@ npm test                          # glass maths unit tests (Node's built-in runn
 npm run typecheck
 ```
 
-The app calls `http://10.0.2.2:8000` on the Android emulator and `http://localhost:8000`
-on iOS simulator / web. On a physical phone set `EXPO_PUBLIC_API_URL` to your computer's
-LAN address and start the API with `uvicorn app.main:app --host 0.0.0.0`.
+In development the app talks to port 8000 on the computer running `expo start` (it reads the
+address from Expo), so a phone on the same Wi-Fi works without setup — start the API with
+`uvicorn app.main:app --reload --host 0.0.0.0`. Set `EXPO_PUBLIC_API_URL` to override.
+
+**"Can't reach the server" on a phone (Windows):** Windows Firewall blocks incoming connections on
+networks marked *Public*. In an **administrator** PowerShell, mark your home Wi-Fi as private and
+allow the API port on private networks only:
+
+```powershell
+Set-NetConnectionProfile -InterfaceAlias "Wi-Fi" -NetworkCategory Private
+New-NetFirewallRule -DisplayName "Healthy Lifestyles API (dev)" -Direction Inbound -Protocol TCP -LocalPort 8000 -Action Allow -Profile Private
+```
 
 GPS background tracking, Health Connect, HealthKit and in-app purchases need a
 **development build** (`npx expo run:android` / `eas build --profile development`);

@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     app_deep_link_base: str = "healthylifestyles://"
     support_email: str = "support@example.com"
 
+    # Browser origins allowed to call the API (only the web build needs this; native apps don't use CORS).
+    # Comma-separated in the environment, e.g. CORS_ORIGINS=https://app.example.com
+    cors_origins: list[str] = Field(default_factory=list)
+
     database_url: str = "postgresql+psycopg://wellness:wellness@localhost:5432/wellness"
 
     # Auth

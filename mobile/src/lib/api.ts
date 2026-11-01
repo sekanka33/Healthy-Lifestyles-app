@@ -5,12 +5,28 @@
  * - On 401 the client refreshes once and retries. Refreshes are single-flight: the server treats
  *   reuse of a rotated refresh token as theft, so two parallel refreshes would sign the user out.
  */
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 import { deleteSecret, getSecret, setSecret } from './secure-storage';
 
-const DEFAULT_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
-export const API_URL = (process.env.EXPO_PUBLIC_API_URL || DEFAULT_URL).replace(/\/$/, '');
+/**
+ * Where the backend is.
+ * 1. EXPO_PUBLIC_API_URL if set (staging / production builds, or to override).
+ * 2. In development: the computer running the Expo dev server, port 8000. Expo tells us its address
+ *    (`hostUri`, e.g. 192.168.18.67:8081), which a real phone on the same Wi-Fi can reach — so no setup.
+ * 3. Fallbacks for emulators/simulators.
+ */
+function devServerHost(): string | null {
+  if (!__DEV__) return null;
+  if (Platform.OS === 'web') return typeof window !== 'undefined' ? window.location.hostname || null : null;
+  const hostUri = Constants.expoConfig?.hostUri;
+  return hostUri ? hostUri.split(':')[0] : null;
+}
+
+const FALLBACK_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
+const devHost = devServerHost();
+export const API_URL = (process.env.EXPO_PUBLIC_API_URL || (devHost ? `http://${devHost}:8000` : FALLBACK_URL)).replace(/\/$/, '');
 
 const REFRESH_KEY = 'hl.refresh_token';
 
@@ -274,7 +290,9 @@ async function raw<T>(method: string, path: string, body?: unknown, token?: stri
       signal: controller.signal,
     });
   } catch {
-    throw new ApiError(0, 'network_error', "Can't reach the server. Check your connection.");
+    throw new ApiError(0, 'network_error', __DEV__
+      ? `Can't reach the server at ${API_URL}. Is the backend running (uvicorn … --host 0.0.0.0) and on the same Wi-Fi?`
+      : "Can't reach the server. Check your connection.");
   } finally {
     clearTimeout(timer);
   }
