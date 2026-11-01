@@ -1,6 +1,6 @@
-import { Link, router } from 'expo-router';
-import { useRef, useState } from 'react';
-import { StyleSheet, TextInputInstance, View } from 'react-native';
+import { Link, useFocusEffect } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
+import { BackHandler, StyleSheet, TextInputInstance, View } from 'react-native';
 
 import { DropIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,13 @@ export default function SignIn() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const passwordRef = useRef<TextInputInstance>(null);
+
+  // No way back to browsing from here: guests must sign in or register to continue.
+  // (Android's back button is swallowed; the iOS swipe gesture is disabled in the root layout.)
+  useFocusEffect(useCallback(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => true);
+    return () => sub.remove();
+  }, []));
 
   async function submit() {
     if (!email.trim() || !password) return setError('Enter your email and password.');
@@ -38,8 +45,8 @@ export default function SignIn() {
         <View style={styles.logo}>
           <DropIcon size={34} color={colors.navy} />
         </View>
-        <AppText variant="title">Sign in to continue</AppText>
-        <AppText variant="caption">Sign in or create a free account to start tracking.</AppText>
+        <AppText variant="title">Sign in or register</AppText>
+        <AppText variant="caption">Sign in or create a free account to continue.</AppText>
       </View>
 
       <TextField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" autoComplete="email"
@@ -58,8 +65,6 @@ export default function SignIn() {
         <Link href="/sign-up" asChild>
           <Button title="Create an account" variant="ghost" />
         </Link>
-        <Button title="Keep browsing" variant="ghost"
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} />
       </View>
     </FormScreen>
   );

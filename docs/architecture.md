@@ -103,8 +103,10 @@ Signed-out visitors open straight into the tabs (Water, History, Profile) and ca
 Water and History show clearly labelled **sample** data, Profile shows a guest overview with the
 Free vs Premium feature table and the settings that an account unlocks. The tab bar works normally.
 Every other button or control (water chips, + WATER, undo, custom amount, history range, profile
-rows) goes through `useAccountGate()` and opens the sign-in screen (modal, with a link to create an
-account and a "Keep browsing" exit). Guests never call account APIs. Account-only screens
+rows) goes through `useAccountGate()` and opens the Login/Register screen. That screen has **no exit
+back to browsing**: there's no "continue as guest" button, the iOS swipe-to-dismiss gesture is off and
+Android's back button is swallowed, so the only way forward is to sign in or create an account.
+Navigation between sign-in, registration and password reset works normally. Guests never call account APIs. Account-only screens
 (`premium`, `payments`, `change-password`) are guarded by `Stack.Protected`. After sign-in the modal
 closes onto the same tab with real data; a new account goes through email verification first.
 

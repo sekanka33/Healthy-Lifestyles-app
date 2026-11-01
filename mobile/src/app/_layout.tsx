@@ -51,7 +51,7 @@ function RootNavigator() {
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
-      {/* Guests browse the tabs too; every action inside them routes guests to sign-in. */}
+      {/* Guests browse the tabs freely; any action inside them opens Login/Register (no way back without signing in). */}
       <Stack.Protected guard={!signedIn || verified}>
         <Stack.Screen name="(tabs)" />
       </Stack.Protected>
@@ -65,7 +65,8 @@ function RootNavigator() {
         <Stack.Screen name="verify-email" />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
-        <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
+        {/* Full screen, not a dismissable sheet: the only way forward is to sign in or register. */}
+        <Stack.Screen name="(auth)" options={{ gestureEnabled: false, animation: 'slide_from_bottom' }} />
       </Stack.Protected>
     </Stack>
   );
