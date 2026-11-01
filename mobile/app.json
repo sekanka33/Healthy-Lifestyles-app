@@ -39,6 +39,16 @@
         {
           "color": "#04C3D5"
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Healthy Lifestyles uses your location to record the route, distance and pace of your walks, jogs and runs.",
+          "locationAlwaysAndWhenInUsePermission": "Allow location while a workout is recording so your route is still tracked when the screen is locked. Location is only used during workouts you start.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
       ]
     ],
     "experiments": {

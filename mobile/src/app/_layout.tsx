@@ -13,6 +13,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, useAuth } from '@/lib/auth-context';
 import { isMedicationReminder } from '@/lib/medication-reminders';
+import '@/lib/workout-tracker'; // registers the background location task at startup
 import { colors } from '@/theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
@@ -72,6 +73,9 @@ function RootNavigator() {
         <Stack.Screen name="premium" options={{ presentation: 'modal' }} />
         <Stack.Screen name="payments" options={{ presentation: 'modal' }} />
         <Stack.Screen name="medication-edit" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="workout/[id]" />
+        <Stack.Screen name="workout-manual" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="fitness-settings" options={{ presentation: 'modal' }} />
       </Stack.Protected>
       <Stack.Protected guard={signedIn && !verified}>
         <Stack.Screen name="verify-email" options={{ gestureEnabled: false, animation: 'slide_from_bottom' }} />

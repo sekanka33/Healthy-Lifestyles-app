@@ -60,3 +60,13 @@ class NotificationPrefsUpdate(BaseModel):
         if ("quiet_hours_start" in fields) != ("quiet_hours_end" in fields):
             raise ValueError("quiet_hours_start and quiet_hours_end must be set together")
         return self
+
+
+class FitnessProfileOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    body_weight_kg: float | None  # optional; only used for calorie *estimates*
+
+
+class FitnessProfileUpdate(BaseModel):
+    body_weight_kg: float | None = Field(ge=20, le=400)

@@ -136,3 +136,34 @@ reported as **unrecorded** — never assumed taken and never counted as missed.
 **Reminders** are on-device local notifications (`expo-notifications`) for the next 7 days, capped at
 60 (iOS allows 64), re-planned whenever medications change or the Meds tab opens, and cleared on sign
 out or when Premium lapses. The text is generic so medication names never appear on the lock screen.
+
+## API (Phase 7 — fitness, Premium)
+
+| Method & path | Auth | Purpose |
+|---|---|---|
+| `POST /workouts` | Premium | Start a GPS workout (idempotent on device `client_id`) |
+| `POST /workouts/{id}/points` | Premium | Upload ≤ 500 fixes per batch (idempotent on `seq`); server recomputes distance |
+| `POST /workouts/{id}/finish` · `/discard` | Premium | Finish (idempotent) or throw away |
+| `POST /workouts/manual` | Premium | Log a workout without GPS |
+| `GET /workouts?from&to` · `GET /workouts/{id}` | verified | List completed workouts / detail with accepted route |
+| `DELETE /workouts/{id}` | verified | Delete workout and route (always allowed) |
+| `GET/PUT/DELETE /health/connections/{provider}` | Premium (read/delete: verified) | Health Connect / Apple Health link, optional delete of imported data |
+| `POST /health/import` | Premium | Upsert platform records, dedup on (user, source, external id) |
+| `GET/POST/DELETE /fitness/goals` | Premium | Weekly / monthly distance, count or active-minute goals |
+| `GET /fitness/summary?period=weekly|monthly` | Premium | Totals + goal progress for the current local week (Mon–Sun) or month |
+| `GET/PUT /me/fitness-profile` | any user | Optional body weight, used only for calorie estimates |
+
+**GPS rules (server-side, `services/geo.py`, mirrored in `mobile/src/lib/geo.ts` for the live view).**
+Fixes worse than 35 m accuracy, implied speeds above 3.5 / 6 / 10 m/s (walk / jog / run), and moves under
+3 m (jitter) are rejected; distance never bridges a pause (new segment). Active time excludes pauses
+and is capped at wall-clock time. Calories = MET × weight × hours, shown only as an estimate and only
+if the user gave a weight.
+
+**Mobile tracking** (`expo-location` + `expo-task-manager`): a background location task (Android
+foreground service with a visible notification, iOS background location indicator) appends every fix
+to a persisted buffer first, then uploads in batches; offline gaps and retries are safe. If background
+permission is refused it falls back to foreground-only updates and tells the user to keep the app
+open. Requires a development build.
+
+**Not yet done:** reading workouts from Health Connect / Apple Health on the phone (needs the native
+health modules and a device to test). The backend import and connection endpoints are ready for it.

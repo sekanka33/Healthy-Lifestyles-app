@@ -46,3 +46,13 @@ export function PillIcon({ size = 24, color }: P) {
     </Svg>
   );
 }
+
+export function RunIcon({ size = 24, color }: P) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Circle cx="14.5" cy="4.5" r="2.2" fill={color} />
+      <Path d="M10 8.5l3.2-1.2 2.6 2.4 2.7.8M12.6 8l-1.6 5 3.4 2.6-1.2 5M11 13l-2.7 2.5H5"
+        stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    </Svg>
+  );
+}

@@ -3,12 +3,12 @@ import type { BottomTabBarProps } from 'expo-router/tabs';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ChartIcon, DropIcon, PersonIcon, PillIcon } from '@/components/icons';
+import { ChartIcon, DropIcon, PersonIcon, PillIcon, RunIcon } from '@/components/icons';
 import { AppText } from '@/components/ui/text';
 import { colors, fonts } from '@/theme/tokens';
 
-const ICONS = { index: DropIcon, history: ChartIcon, medications: PillIcon, profile: PersonIcon } as const;
-const LABELS = { index: 'Water', history: 'History', medications: 'Meds', profile: 'Profile' } as const;
+const ICONS = { index: DropIcon, history: ChartIcon, fitness: RunIcon, medications: PillIcon, profile: PersonIcon } as const;
+const LABELS = { index: 'Water', history: 'History', fitness: 'Move', medications: 'Meds', profile: 'Profile' } as const;
 
 /** White bar, large top radius, active tab with a short rounded underline (per the reference). */
 function TabBar({ state, navigateToTab }: BottomTabBarProps) {
@@ -44,6 +44,7 @@ export default function TabsLayout() {
       tabBar={(props) => <TabBar {...props} />}>
       <Tabs.Screen name="index" />
       <Tabs.Screen name="history" />
+      <Tabs.Screen name="fitness" />
       <Tabs.Screen name="medications" />
       <Tabs.Screen name="profile" />
     </Tabs>
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   item: { flex: 1, alignItems: 'center', gap: 3, minHeight: 48 },
-  label: { fontFamily: fonts.regular, fontSize: 13 },
+  label: { fontFamily: fonts.regular, fontSize: 12 },
   indicator: { width: 22, height: 3, borderRadius: 2, marginTop: 2, backgroundColor: 'transparent' },
   indicatorOn: { backgroundColor: colors.tabIndicator },
 });

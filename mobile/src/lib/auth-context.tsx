@@ -5,6 +5,7 @@ import { api, ApiError, clearTokens, hasStoredSession, refreshSession, saveToken
 import { clearHydrationCache } from './hydration-store';
 import { clearMedicationReminders } from './medication-reminders';
 import { forgetPurchaser, identifyPurchaser } from './purchases';
+import { clearActiveWorkout } from './workout-tracker';
 
 const USER_CACHE_KEY = 'hl.user';
 
@@ -46,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await clearHydrationCache();
     await forgetPurchaser();
     await clearMedicationReminders().catch(() => undefined); // never remind a signed-out device
+    await clearActiveWorkout().catch(() => undefined); // stop GPS; the recording belonged to that account
     setUserState(null);
     setStatus('signedOut');
   }, []);

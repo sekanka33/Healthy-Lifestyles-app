@@ -3,8 +3,15 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import DB, AnyUser
 from app.db.base import as_utc
-from app.models.user import NotificationPreferences, User
-from app.schemas.user import NotificationPrefsOut, NotificationPrefsUpdate, UserOut, UserUpdate
+from app.models.user import NotificationPreferences, User, UserPreferences
+from app.schemas.user import (
+    FitnessProfileOut,
+    FitnessProfileUpdate,
+    NotificationPrefsOut,
+    NotificationPrefsUpdate,
+    UserOut,
+    UserUpdate,
+)
 from app.services.entitlements import plan
 
 router = APIRouter(prefix="/me", tags=["profile"])
@@ -57,5 +64,28 @@ def update_notification_prefs(data: NotificationPrefsUpdate, user: AnyUser, db: 
         if value is None and field not in ("quiet_hours_start", "quiet_hours_end"):
             continue
         setattr(prefs, field, value)
+    db.commit()
+    return prefs
+
+
+def _preferences(db: Session, user: User) -> UserPreferences:
+    prefs = db.get(UserPreferences, user.id)
+    if prefs is None:
+        prefs = UserPreferences(user_id=user.id)
+        db.add(prefs)
+        db.commit()
+    return prefs
+
+
+@router.get("/fitness-profile", response_model=FitnessProfileOut)
+def get_fitness_profile(user: AnyUser, db: DB):
+    return _preferences(db, user)
+
+
+@router.put("/fitness-profile", response_model=FitnessProfileOut)
+def put_fitness_profile(data: FitnessProfileUpdate, user: AnyUser, db: DB):
+    """Body weight is optional and only used to estimate calories. Send null to remove it."""
+    prefs = _preferences(db, user)
+    prefs.body_weight_kg = data.body_weight_kg
     db.commit()
     return prefs

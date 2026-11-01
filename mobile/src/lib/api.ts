@@ -119,6 +119,38 @@ export type AdherenceRow = {
   adherence: number | null;
 };
 
+export type Activity = 'walking' | 'jogging' | 'running';
+export type Workout = {
+  id: string;
+  client_id: string;
+  activity_type: Activity;
+  source: string;
+  status: string;
+  started_at: string;
+  ended_at: string | null;
+  active_duration_s: number;
+  distance_m: number;
+  pace_s_per_km: number | null;
+  calories_kcal_estimate: number | null;
+  steps: number | null;
+  notes: string | null;
+  point_count: number;
+};
+export type WorkoutDetail = Workout & { route: { lat: number; lon: number; segment: number }[] };
+export type WorkoutPointIn = {
+  seq: number; segment: number; recorded_at: string; lat: number; lon: number;
+  altitude_m?: number | null; accuracy_m?: number | null; speed_mps?: number | null;
+};
+export type GoalProgress = {
+  id: string; metric: 'distance_km' | 'workout_count' | 'active_minutes'; period: 'weekly' | 'monthly';
+  target_value: number; activity_type: Activity | null; current_value: number; progress: number;
+  period_start: string; period_end: string;
+};
+export type FitnessSummary = {
+  period: 'weekly' | 'monthly'; period_start: string; period_end: string; timezone: string; workouts: number;
+  distance_km: number; active_minutes: number; calories_kcal_estimate: number | null; goals: GoalProgress[];
+};
+
 // ------------------------------------------------------------------ errors
 
 export class ApiError extends Error {
@@ -302,4 +334,21 @@ export const api = {
   clearDose: (id: string, scheduled_for: string) =>
     authed<void>('DELETE', `/medications/${id}/doses?scheduled_for=${encodeURIComponent(scheduled_for)}`),
   adherence: () => authed<{ from_date: string; to_date: string; medications: AdherenceRow[] }>('GET', '/medications/adherence'),
+
+  workouts: () => authed<Workout[]>('GET', '/workouts'),
+  workout: (id: string) => authed<WorkoutDetail>('GET', `/workouts/${id}`),
+  startWorkout: (b: { client_id: string; activity_type: Activity; started_at: string }) => authed<Workout>('POST', '/workouts', b),
+  addWorkoutPoints: (id: string, points: WorkoutPointIn[]) =>
+    authed<{ added: number; distance_m: number }>('POST', `/workouts/${id}/points`, { points }),
+  finishWorkout: (id: string, b: { ended_at: string; active_duration_s: number }) => authed<Workout>('POST', `/workouts/${id}/finish`, b),
+  discardWorkout: (id: string) => authed<Workout>('POST', `/workouts/${id}/discard`),
+  deleteWorkout: (id: string) => authed<void>('DELETE', `/workouts/${id}`),
+  manualWorkout: (b: { client_id: string; activity_type: Activity; started_at: string; active_duration_s: number; distance_m: number }) =>
+    authed<Workout>('POST', '/workouts/manual', b),
+  fitnessSummary: (period: 'weekly' | 'monthly' = 'weekly') => authed<FitnessSummary>('GET', `/fitness/summary?period=${period}`),
+  addFitnessGoal: (b: { metric: GoalProgress['metric']; period: GoalProgress['period']; target_value: number }) =>
+    authed<GoalProgress>('POST', '/fitness/goals', b),
+  removeFitnessGoal: (id: string) => authed<void>('DELETE', `/fitness/goals/${id}`),
+  fitnessProfile: () => authed<{ body_weight_kg: number | null }>('GET', '/me/fitness-profile'),
+  setFitnessProfile: (body_weight_kg: number | null) => authed<{ body_weight_kg: number | null }>('PUT', '/me/fitness-profile', { body_weight_kg }),
 };
