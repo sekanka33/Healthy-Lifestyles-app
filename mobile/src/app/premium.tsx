@@ -4,23 +4,15 @@ import { ActivityIndicator, Alert, Linking, Platform, ScrollView, StyleSheet, Vi
 import type { PurchasesPackage } from 'react-native-purchases';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FeatureTable } from '@/components/feature-table';
 import { DropIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { AppText } from '@/components/ui/text';
 import { api, BillingStatus } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { buy, getPremiumPackage, manageSubscription, PurchaseOutcome, purchasesAvailable, restore } from '@/lib/purchases';
-import { colors, fonts, radius } from '@/theme/tokens';
+import { colors, radius } from '@/theme/tokens';
 
-const FEATURES: { label: string; free: boolean }[] = [
-  { label: 'Water tracking, goals, history & reports', free: true },
-  { label: 'Current weather', free: true },
-  { label: 'Google Calendar free-time view', free: true },
-  { label: 'Medication schedules & reminders', free: false },
-  { label: 'GPS walks, runs & health app sync', free: false },
-  { label: 'Weather-aware exercise suggestions', free: false },
-  { label: 'Add planned activities to your calendar', free: false },
-];
 
 const TERMS_URL = process.env.EXPO_PUBLIC_TERMS_URL;
 const PRIVACY_URL = process.env.EXPO_PUBLIC_PRIVACY_URL;
@@ -97,21 +89,7 @@ export default function Premium() {
           <AppText variant="caption" style={styles.center}>Everything in Free, plus the tools to move more and stay on track.</AppText>
         </View>
 
-        <View style={styles.table} accessibilityLabel="What's included">
-          <View style={styles.tableHead}>
-            <AppText variant="label" style={styles.flex}>Feature</AppText>
-            <AppText variant="label" style={styles.col}>Free</AppText>
-            <AppText variant="label" style={styles.col}>Premium</AppText>
-          </View>
-          {FEATURES.map((f) => (
-            <View key={f.label} style={styles.row} accessible
-              accessibilityLabel={`${f.label}: ${f.free ? 'included in Free and Premium' : 'Premium only'}`}>
-              <AppText style={styles.flex}>{f.label}</AppText>
-              <AppText style={[styles.col, f.free ? styles.yes : styles.no]}>{f.free ? '✓' : '—'}</AppText>
-              <AppText style={[styles.col, styles.yes]}>✓</AppText>
-            </View>
-          ))}
-        </View>
+        <FeatureTable />
 
         {loading ? (
           <ActivityIndicator color={colors.primary} />
@@ -172,13 +150,6 @@ const styles = StyleSheet.create({
   hero: { alignItems: 'center', gap: 8 },
   logo: { width: 72, height: 72, borderRadius: 36, backgroundColor: colors.waterMarker, alignItems: 'center', justifyContent: 'center' },
   center: { textAlign: 'center' },
-  table: { backgroundColor: colors.accentWash, borderRadius: radius.md, padding: 16, gap: 10 },
-  tableHead: { flexDirection: 'row', alignItems: 'center' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  flex: { flex: 1 },
-  col: { width: 64, textAlign: 'center' },
-  yes: { color: colors.tabActive, fontFamily: fonts.heavy },
-  no: { color: colors.textMuted },
   card: { backgroundColor: colors.accentWash, borderRadius: radius.md, padding: 16, gap: 10 },
   legal: { fontSize: 12, lineHeight: 17, color: colors.textMuted },
   links: { flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap' },

@@ -96,3 +96,14 @@ removes it from the queue.
 Premium-only routes depend on `PremiumUser` (`require_premium`), which answers **402
 `premium_required`** unless the server-side entitlement is active, cancelled-but-paid or in grace
 period, and not past `expires_at`. See [subscriptions setup](subscriptions-setup.md).
+
+## Guest mode
+
+Signed-out visitors open straight into the tabs (Water, History, Profile) and can browse freely:
+Water and History show clearly labelled **sample** data, Profile shows a guest overview with the
+Free vs Premium feature table and the settings that an account unlocks. The tab bar works normally.
+Every other button or control (water chips, + WATER, undo, custom amount, history range, profile
+rows) goes through `useAccountGate()` and opens the sign-in screen (modal, with a link to create an
+account and a "Keep browsing" exit). Guests never call account APIs. Account-only screens
+(`premium`, `payments`, `change-password`) are guarded by `Stack.Protected`. After sign-in the modal
+closes onto the same tab with real data; a new account goes through email verification first.

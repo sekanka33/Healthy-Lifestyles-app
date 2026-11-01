@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { StyleSheet, TextInputInstance, View } from 'react-native';
 
@@ -38,8 +38,8 @@ export default function SignIn() {
         <View style={styles.logo}>
           <DropIcon size={34} color={colors.navy} />
         </View>
-        <AppText variant="title">Welcome back</AppText>
-        <AppText variant="caption">Sign in to keep your hydration streak going.</AppText>
+        <AppText variant="title">Sign in to continue</AppText>
+        <AppText variant="caption">Sign in or create a free account to start tracking.</AppText>
       </View>
 
       <TextField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" autoComplete="email"
@@ -58,6 +58,8 @@ export default function SignIn() {
         <Link href="/sign-up" asChild>
           <Button title="Create an account" variant="ghost" />
         </Link>
+        <Button title="Keep browsing" variant="ghost"
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} />
       </View>
     </FormScreen>
   );

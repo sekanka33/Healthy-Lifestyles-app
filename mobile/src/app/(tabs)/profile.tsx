@@ -3,9 +3,11 @@ import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FeatureTable } from '@/components/feature-table';
 import { Button } from '@/components/ui/button';
 import { AppText } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
+import { useAccountGate } from '@/hooks/use-account-gate';
 import { api, ApiError } from '@/lib/api';
 import { deviceTimeZone, useAuth } from '@/lib/auth-context';
 import { sync, useHydration } from '@/lib/hydration-store';
@@ -14,6 +16,55 @@ import { colors, fonts, radius } from '@/theme/tokens';
 const GOAL_PRESETS = [1500, 2000, 2500, 3000];
 
 export default function Profile() {
+  const { status, user } = useAuth();
+  // Guests must never trigger account API calls (they'd just bounce off 401s).
+  return status === 'signedIn' && user ? <SignedInProfile /> : <GuestProfile />;
+}
+
+/** What a visitor can explore without an account. Every button leads to sign-in. */
+function GuestProfile() {
+  const { gate } = useAccountGate();
+  const settings = [
+    { title: 'Daily water goal', detail: 'Pick 1.5–3 L or any custom amount. Past days keep their goal.' },
+    { title: 'Reminders', detail: 'Gentle hydration nudges with quiet hours.' },
+    { title: 'Units & time zone', detail: 'Metric or imperial; your day resets at local midnight.' },
+    { title: 'Premium', detail: 'Medication reminders, GPS workouts, weather-aware plans.' },
+    { title: 'Payment history', detail: 'Every payment you make, in one place.' },
+  ];
+  return (
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <AppText variant="title">Profile</AppText>
+        <View style={styles.guestCard}>
+          <AppText variant="heading">You&apos;re browsing as a guest</AppText>
+          <AppText variant="caption">
+            Look around as much as you like. To track water, set goals or use any feature, sign in or create a free account.
+          </AppText>
+          <Button title="SIGN IN OR CREATE ACCOUNT" onPress={gate(() => undefined)} />
+        </View>
+
+        <Section title="What you can do">
+          <FeatureTable />
+        </Section>
+
+        <Section title="Your settings">
+          {settings.map((item) => (
+            <Pressable key={item.title} accessibilityRole="button" accessibilityHint="Opens sign in"
+              onPress={gate(() => undefined)} style={({ pressed }) => [styles.settingRow, pressed && styles.pressed]}>
+              <View style={styles.flex}>
+                <AppText style={styles.settingTitle}>{item.title}</AppText>
+                <AppText variant="caption">{item.detail}</AppText>
+              </View>
+              <AppText style={styles.chevron}>›</AppText>
+            </Pressable>
+          ))}
+        </Section>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+function SignedInProfile() {
   const { user, setUser, signOut } = useAuth();
   const { pendingCount } = useHydration();
   const [firstName, setFirstName] = useState(user?.first_name ?? '');
@@ -170,4 +221,10 @@ const styles = StyleSheet.create({
   preset: { paddingHorizontal: 16, height: 40, borderRadius: radius.pill, backgroundColor: colors.chip, justifyContent: 'center' },
   presetOn: { backgroundColor: colors.chipSelected, borderWidth: 2, borderColor: colors.primary },
   presetLabel: { fontFamily: fonts.bold },
+  guestCard: { backgroundColor: colors.accentWash, borderRadius: radius.md, padding: 16, gap: 10 },
+  settingRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border },
+  settingTitle: { fontFamily: fonts.bold },
+  chevron: { fontFamily: fonts.heavy, fontSize: 22, color: colors.textMuted },
+  flex: { flex: 1, gap: 2 },
+  pressed: { opacity: 0.6 },
 });

@@ -41,8 +41,11 @@ function RootNavigator() {
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
-      <Stack.Protected guard={signedIn && verified}>
+      {/* Guests browse the tabs too; every action inside them routes guests to sign-in. */}
+      <Stack.Protected guard={!signedIn || verified}>
         <Stack.Screen name="(tabs)" />
+      </Stack.Protected>
+      <Stack.Protected guard={signedIn && verified}>
         <Stack.Screen name="change-password" options={{ presentation: 'modal' }} />
         <Stack.Screen name="premium" options={{ presentation: 'modal' }} />
         <Stack.Screen name="payments" options={{ presentation: 'modal' }} />
@@ -51,7 +54,7 @@ function RootNavigator() {
         <Stack.Screen name="verify-email" />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
-        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
       </Stack.Protected>
     </Stack>
   );

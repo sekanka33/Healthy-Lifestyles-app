@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { AppText } from '@/components/ui/text';
+import { useAccountGate } from '@/hooks/use-account-gate';
 import { api, ApiError, DaySummary } from '@/lib/api';
 import { colors, fonts, radius } from '@/theme/tokens';
 
@@ -21,7 +22,19 @@ function shortDate(date: string) {
   return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(undefined, { day: 'numeric', month: 'short', timeZone: 'UTC' });
 }
 
+/** Illustrative week for guests (relative to today, clearly labelled as sample data). */
+function sampleDays(): DaySummary[] {
+  const totals = [1800, 2250, 1500, 2000, 2600, 1200, 1250];
+  return totals.map((total, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (totals.length - 1 - i));
+    const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    return { date, total_ml: total, goal_ml: 2000, progress: total / 2000, goal_met: total >= 2000 };
+  });
+}
+
 export default function History() {
+  const { isGuest, gate } = useAccountGate();
   const [range, setRange] = useState<(typeof RANGES)[number]>(7);
   const [days, setDays] = useState<DaySummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +42,7 @@ export default function History() {
 
   const load = useCallback(async (r: number) => {
     setError(null);
+    if (isGuest) return setDays(sampleDays());
     try {
       const all = (await api.history()).days; // default window: last 7 days ending today
       if (r === 7) return setDays(all);
@@ -39,7 +53,7 @@ export default function History() {
     } catch (e) {
       setError(e instanceof ApiError ? e.userMessage : 'Could not load history.');
     }
-  }, []);
+  }, [isGuest]);
 
   useFocusEffect(useCallback(() => void load(range), [load, range]));
 
@@ -50,16 +64,17 @@ export default function History() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => {
+        refreshControl={isGuest ? undefined : <RefreshControl refreshing={refreshing} onRefresh={async () => {
           setRefreshing(true);
           await load(range);
           setRefreshing(false);
         }} />}>
         <AppText variant="title">History</AppText>
+        {isGuest && <AppText variant="caption">Sample data. Sign in to see your own history.</AppText>}
         <View style={styles.segment} accessibilityRole="tablist">
           {RANGES.map((r) => (
             <Pressable key={r} accessibilityRole="tab" accessibilityState={{ selected: range === r }}
-              onPress={() => { setRange(r); setDays(null); }} style={[styles.segItem, range === r && styles.segOn]}>
+              onPress={gate(() => { setRange(r); setDays(null); })} style={[styles.segItem, range === r && styles.segOn]}>
               <AppText style={[styles.segLabel, range === r && styles.segLabelOn]}>{r} days</AppText>
             </Pressable>
           ))}
@@ -68,7 +83,7 @@ export default function History() {
         {error ? (
           <View style={styles.empty}>
             <AppText variant="error">{error}</AppText>
-            <Button title="Try again" variant="secondary" onPress={() => load(range)} />
+            <Button title="Try again" variant="secondary" onPress={gate(() => load(range))} />
           </View>
         ) : !days ? (
           <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />

@@ -9,12 +9,15 @@ import { Button } from '@/components/ui/button';
 import { AppText } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import { WaterGlass } from '@/components/water-glass';
+import { useAccountGate } from '@/hooks/use-account-gate';
 import { useCountUp } from '@/hooks/use-count-up';
 import { useAuth } from '@/lib/auth-context';
 import { addWater, initHydration, setHydrationTimeZone, sync, undoLast, useHydration } from '@/lib/hydration-store';
 import { colors, fonts, radius } from '@/theme/tokens';
 
 const CHIPS = [100, 250, 500];
+/** What guests see: a clearly labelled example, never real data. */
+const SAMPLE = { totalMl: 1250, goalMl: 2000, entries: [{}], pendingCount: 0, syncing: false, lastError: null };
 
 function haptic() {
   if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
@@ -22,19 +25,21 @@ function haptic() {
 
 export default function HydrationScreen() {
   const { user } = useAuth();
-  const h = useHydration();
+  const { isGuest, gate } = useAccountGate();
+  const live = useHydration();
+  const h = isGuest ? SAMPLE : live;
   const { width, height } = useWindowDimensions();
   const [amount, setAmount] = useState(250);
   const [customOpen, setCustomOpen] = useState(false);
 
   const tz = user?.timezone ?? 'UTC';
   useEffect(() => {
-    void initHydration(tz);
-  }, [tz]);
+    if (!isGuest) void initHydration(tz);
+  }, [tz, isGuest]);
   useEffect(() => setHydrationTimeZone(tz), [tz]);
 
   // Re-sync when the screen regains focus (e.g. goal changed on Profile) or the app returns to the foreground.
-  useFocusEffect(useCallback(() => void sync(), []));
+  useFocusEffect(useCallback(() => void sync(), [])); // no-op for guests (store never initialised)
   useEffect(() => {
     const sub = AppState.addEventListener('change', (s) => s === 'active' && void sync());
     return () => sub.remove();
@@ -47,8 +52,14 @@ export default function HydrationScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
-        <AppText variant="heading">Hi {user?.first_name}</AppText>
-        <SyncBadge pending={h.pendingCount} syncing={h.syncing} />
+        <AppText variant="heading">{isGuest ? 'Welcome' : `Hi ${user?.first_name}`}</AppText>
+        {isGuest ? (
+          <View style={styles.badge} accessibilityLabel="Sample data">
+            <AppText style={styles.badgeText}>Sample</AppText>
+          </View>
+        ) : (
+          <SyncBadge pending={h.pendingCount} syncing={h.syncing} />
+        )}
       </View>
 
       <View style={styles.center}>
@@ -57,7 +68,9 @@ export default function HydrationScreen() {
           <AppText style={styles.unit}>ml</AppText>
         </View>
         <AppText variant="caption">
-          {remaining > 0 ? `${remaining.toLocaleString()} ml to your ${h.goalMl.toLocaleString()} ml goal` : 'Goal reached — nice work!'}
+          {isGuest
+            ? 'Sign in to track your own water'
+            : remaining > 0 ? `${remaining.toLocaleString()} ml to your ${h.goalMl.toLocaleString()} ml goal` : 'Goal reached — nice work!'}
         </AppText>
 
         <View style={styles.glass}>
@@ -67,7 +80,7 @@ export default function HydrationScreen() {
         <View style={styles.chips} accessibilityRole="radiogroup">
           {CHIPS.map((ml) => (
             <Pressable key={ml} accessibilityRole="radio" accessibilityState={{ selected: amount === ml }}
-              onPress={() => setAmount(ml)} style={[styles.chip, amount === ml && styles.chipOn]}>
+              onPress={gate(() => setAmount(ml))} style={[styles.chip, amount === ml && styles.chipOn]}>
               <AppText style={styles.chipLabel}>{ml} ml</AppText>
             </Pressable>
           ))}
@@ -75,13 +88,13 @@ export default function HydrationScreen() {
 
         <View style={styles.actions}>
           <Pressable accessibilityRole="button" accessibilityLabel="Undo last drink" disabled={!h.entries.length}
-            onPress={() => { haptic(); void undoLast(); }}
+            onPress={gate(() => { haptic(); void undoLast(); })}
             style={({ pressed }) => [styles.round, styles.roundWash, !h.entries.length && styles.dim, pressed && styles.pressed]}>
             <UndoIcon color={colors.accentIcon} />
           </Pressable>
           <Button title={`+ WATER`} accessibilityLabel={`Add ${amount} millilitres`} style={styles.add}
-            onPress={() => { haptic(); void addWater(amount); }} />
-          <Pressable accessibilityRole="button" accessibilityLabel="Custom amount" onPress={() => setCustomOpen(true)}
+            onPress={gate(() => { haptic(); void addWater(amount); })} />
+          <Pressable accessibilityRole="button" accessibilityLabel="Custom amount" onPress={gate(() => setCustomOpen(true))}
             style={({ pressed }) => [styles.round, styles.roundSoft, pressed && styles.pressed]}>
             <AppText style={styles.dots}>•••</AppText>
           </Pressable>
