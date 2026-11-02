@@ -3,7 +3,7 @@
  *
  * We schedule individual dose times for the next 7 days, refreshed whenever medications change and
  * when the app comes to the foreground. iOS keeps at most 64 pending notifications per app, so we cap
- * at 60. The text is deliberately generic: medication names never appear on the lock screen.
+ * at 40. The text is deliberately generic: medication names never appear on the lock screen.
  */
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
@@ -14,16 +14,7 @@ import { localDate } from './hydration-store';
 const KIND = 'medication-reminder';
 const CHANNEL = 'medication';
 const HORIZON_DAYS = 7;
-const MAX_PENDING = 60;
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+const MAX_PENDING = 40; // of iOS's 64; hydration reminders hold the other 24 (MAX_DAILY_REMINDERS)
 
 async function ensureChannel() {
   if (Platform.OS !== 'android') return;

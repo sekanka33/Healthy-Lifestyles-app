@@ -59,9 +59,9 @@ class NotificationPreferences(Timestamps, Base):
 
     user_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     hydration_reminders_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
-    hydration_reminder_interval_minutes: Mapped[int] = mapped_column(Integer, default=120)
-    quiet_hours_start: Mapped[time | None] = mapped_column(Time)
-    quiet_hours_end: Mapped[time | None] = mapped_column(Time)
+    hydration_reminder_interval_minutes: Mapped[int] = mapped_column(Integer, default=90)
+    quiet_hours_start: Mapped[time | None] = mapped_column(Time, default=time(22, 0))
+    quiet_hours_end: Mapped[time | None] = mapped_column(Time, default=time(7, 0))
     medication_reminders_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     workout_reminders_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
 

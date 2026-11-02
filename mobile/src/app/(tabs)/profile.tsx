@@ -177,6 +177,11 @@ function SignedInProfile() {
         {(dirtyName || dirtyGoal) && <Button title="SAVE CHANGES" onPress={save} loading={busy} />}
         {message && <AppText variant={message.error ? 'error' : 'caption'}>{message.text}</AppText>}
 
+        <Section title="Water reminders">
+          <AppText variant="caption">Gentle nudges to drink, muted while you sleep.</AppText>
+          <Button title="Reminders & quiet hours" variant="secondary" onPress={() => router.push('/hydration-reminders')} />
+        </Section>
+
         <Section title="Units">
           <View style={styles.presets}>
             {(['metric', 'imperial'] as const).map((u) => (

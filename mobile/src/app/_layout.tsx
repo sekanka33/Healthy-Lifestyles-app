@@ -9,14 +9,32 @@ import { router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef } from 'react';
+import { AppState, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, useAuth } from '@/lib/auth-context';
+import { isHydrationReminder, syncHydrationReminders } from '@/lib/hydration-reminders';
+import { hydrationGoalMet } from '@/lib/hydration-store';
 import { isMedicationReminder } from '@/lib/medication-reminders';
 import '@/lib/workout-tracker'; // registers the background location task at startup
 import { colors } from '@/theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
+
+// Decides how a notification appears while the app is open.
+Notifications.setNotificationHandler({
+  handleNotification: async (notification) => {
+    const show = !(isHydrationReminder(notification) && hydrationGoalMet()); // no water nudge once the goal is met
+    return { shouldShowBanner: show, shouldShowList: show, shouldPlaySound: show, shouldSetBadge: false };
+  },
+});
+
+/** Tapping a reminder opens the screen it's about (guests are routed to sign-in by the guard). */
+function openReminder(response: Notifications.NotificationResponse) {
+  if (isMedicationReminder(response)) router.navigate('/medications');
+  // dismissTo closes anything open on top of the tabs (a settings sheet, say) rather than stacking.
+  else if (isHydrationReminder(response.notification)) router.dismissTo('/');
+}
 
 // Whatever the auth state, the first screen anyone sees is the app's content (the tabs).
 export const unstable_settings = { initialRouteName: '(tabs)' };
@@ -41,16 +59,36 @@ function RootNavigator() {
     if (status !== 'loading') SplashScreen.hideAsync();
   }, [status]);
 
-  // Tapping a medication reminder opens the Meds tab (guests are routed to sign-in by the guard).
+  // A tap while the app is running.
   useEffect(() => {
-    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
-      if (isMedicationReminder(response)) router.navigate('/medications');
-    });
+    const sub = Notifications.addNotificationResponseReceivedListener(openReminder);
     return () => sub.remove();
   }, []);
 
+  // A tap that launched the app: act once the navigator below is mounted. Cleared so that it isn't
+  // replayed on the next launch.
+  const ready = status !== 'loading';
+  useEffect(() => {
+    if (!ready || Platform.OS === 'web') return;
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (!response) return;
+      void Notifications.clearLastNotificationResponseAsync();
+      setTimeout(() => openReminder(response), 0);
+    }).catch(() => undefined);
+  }, [ready]);
+
   const signedIn = status === 'signedIn';
   const verified = !!user?.email_verified;
+
+  // Keep this device's water reminders in step with the account, including changes made elsewhere.
+  const account = signedIn && verified;
+  useEffect(() => {
+    if (!account) return;
+    const refresh = () => void syncHydrationReminders().catch(() => undefined);
+    refresh();
+    const sub = AppState.addEventListener('change', (s) => s === 'active' && refresh());
+    return () => sub.remove();
+  }, [account]);
 
   // Straight after registering (or signing in to an unverified account) go to the code screen.
   // On a cold start we don't: the app opens on its content and the gate sends them there on demand.
@@ -80,6 +118,7 @@ function RootNavigator() {
         <Stack.Screen name="plan" />
         <Stack.Screen name="plan-settings" options={{ presentation: 'modal' }} />
         <Stack.Screen name="email-settings" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="hydration-reminders" options={{ presentation: 'modal' }} />
         <Stack.Screen name="privacy" options={{ presentation: 'modal' }} />
       </Stack.Protected>
       <Stack.Protected guard={signedIn && !verified}>

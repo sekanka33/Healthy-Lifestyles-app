@@ -198,6 +198,11 @@ function subscribe(l: () => void) {
   return () => listeners.delete(l);
 }
 
+/** Whether today's goal is met, as far as this device knows. False until today's data has loaded. */
+export function hydrationGoalMet(): boolean {
+  return view.ready && view.date === localDate(new Date(), timeZone) && view.totalMl >= view.goalMl;
+}
+
 export function useHydration(): HydrationView {
   return useSyncExternalStore(subscribe, () => view, () => view);
 }

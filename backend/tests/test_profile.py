@@ -25,6 +25,11 @@ def test_notification_preferences(client, verified):
     h, _ = verified
     prefs = client.get(f"{API}/me/notification-preferences", headers=h).json()
     assert prefs["hydration_reminders_enabled"] is False
+    assert prefs["hydration_reminder_interval_minutes"] == 90
+    assert prefs["quiet_hours_start"] == "22:00:00" and prefs["quiet_hours_end"] == "07:00:00"
+    assert client.patch(f"{API}/me/notification-preferences", headers=h, json={
+        "quiet_hours_start": "22:00:00", "quiet_hours_end": "22:00:00",
+    }).status_code == 422
     res = client.patch(f"{API}/me/notification-preferences", headers=h, json={
         "hydration_reminders_enabled": True, "hydration_reminder_interval_minutes": 90,
         "quiet_hours_start": "22:00:00", "quiet_hours_end": "07:00:00",

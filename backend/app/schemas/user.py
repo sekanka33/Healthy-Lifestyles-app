@@ -59,6 +59,8 @@ class NotificationPrefsUpdate(BaseModel):
         fields = self.model_fields_set
         if ("quiet_hours_start" in fields) != ("quiet_hours_end" in fields):
             raise ValueError("quiet_hours_start and quiet_hours_end must be set together")
+        if self.quiet_hours_start is not None and self.quiet_hours_start == self.quiet_hours_end:
+            raise ValueError("quiet_hours_start and quiet_hours_end must be different")
         return self
 
 

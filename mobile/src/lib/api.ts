@@ -203,6 +203,11 @@ export type EmailPrefs = {
   subscription_lifecycle_emails: boolean; product_updates: boolean;
 };
 export type ReportKind = 'water' | 'fitness' | 'medication';
+export type NotificationPrefs = {
+  hydration_reminders_enabled: boolean; hydration_reminder_interval_minutes: number;
+  quiet_hours_start: string | null; quiet_hours_end: string | null;
+  medication_reminders_enabled: boolean; workout_reminders_enabled: boolean;
+};
 
 // ------------------------------------------------------------------ errors
 
@@ -427,6 +432,8 @@ export const api = {
   schedulingPrefs: () => authed<SchedulingPrefs>('GET', '/me/scheduling-preferences'),
   setSchedulingPrefs: (b: Partial<SchedulingPrefs>) => authed<SchedulingPrefs>('PATCH', '/me/scheduling-preferences', b),
 
+  notificationPrefs: () => authed<NotificationPrefs>('GET', '/me/notification-preferences'),
+  setNotificationPrefs: (b: Partial<NotificationPrefs>) => authed<NotificationPrefs>('PATCH', '/me/notification-preferences', b),
   emailPrefs: () => authed<EmailPrefs>('GET', '/me/email-preferences'),
   setEmailPrefs: (b: Partial<EmailPrefs>) => authed<EmailPrefs>('PATCH', '/me/email-preferences', b),
   emailReport: (kind: ReportKind, period: 'this_week' | 'this_month' | 'weekly' | 'monthly' = 'this_week') =>
