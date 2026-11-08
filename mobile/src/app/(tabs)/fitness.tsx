@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { RunnerFill } from '@/components/runner-fill';
 import { Button } from '@/components/ui/button';
 import { WeatherCard } from '@/components/weather-card';
 import { AppText } from '@/components/ui/text';
@@ -46,6 +47,31 @@ const SAMPLE_WORKOUTS = [
   { id: 's1', label: 'Walk', when: 'Today, 07:10', distance: '3.20 km', time: '38:12' },
   { id: 's2', label: 'Run', when: 'Yesterday, 18:05', distance: '5.20 km', time: '29:40' },
 ];
+
+const RUNNER_SIZE = 200;
+
+/**
+ * How full the runner is. With a weekly distance goal (for this activity or any activity) it shows
+ * this week's progress including the live workout; otherwise it fills once per km (or mile) and starts over.
+ */
+function runnerFill(distanceM: number, activity: Activity, units: 'metric' | 'imperial', summary: FitnessSummary | null) {
+  const goal = summary?.goals.find((g) => g.metric === 'distance_km' && g.period === 'weekly' && g.activity_type === activity)
+    ?? summary?.goals.find((g) => g.metric === 'distance_km' && g.period === 'weekly' && g.activity_type == null);
+  if (goal && goal.target_value > 0) {
+    const doneM = goal.current_value * 1000 + distanceM;
+    const progress = doneM / (goal.target_value * 1000);
+    return {
+      progress,
+      caption: progress >= 1 ? 'Weekly distance goal reached!'
+        : `${formatDistance(doneM, units)} of ${formatDistance(goal.target_value * 1000, units)} weekly goal`,
+    };
+  }
+  const lapM = units === 'imperial' ? 1609.344 : 1000;
+  const unit = units === 'imperial' ? 'mile' : 'km';
+  const laps = Math.floor(distanceM / lapM);
+  const progress = (distanceM % lapM) / lapM;
+  return { progress, caption: `${Math.round(progress * 100)}% of ${laps === 0 ? 'your first' : 'the next'} ${unit}` };
+}
 
 function when(iso: string) {
   return new Date(iso).toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -184,15 +210,18 @@ export default function Fitness() {
     const secs = activeSeconds(active);
     const pace = formatPace(active.distanceM, secs);
     const gpsWeak = active.state === 'running' && (active.accuracyM == null || active.accuracyM > 35);
+    const fillInfo = runnerFill(active.distanceM, active.activity, units, summary);
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
         <ScrollView contentContainerStyle={[styles.content, styles.live]}>
           <AppText variant="label">{ACTIVITY_LABEL[active.activity]} · {active.state === 'paused' ? 'Paused' : active.state === 'finishing' ? 'Saving' : 'Recording'}</AppText>
           <AppText variant="display" style={styles.tabular} accessibilityLabel={`Time ${formatDuration(secs)}`}>{formatDuration(secs)}</AppText>
+          <RunnerFill size={RUNNER_SIZE} progress={fillInfo.progress} accessibilityLabel={fillInfo.caption} />
           <View style={styles.liveStats}>
             <LiveStat label="Distance" value={formatDistance(active.distanceM, units)} />
             <LiveStat label="Pace" value={pace ?? '—'} />
           </View>
+          <AppText variant="caption" style={styles.center}>{fillInfo.caption}</AppText>
           {gpsWeak && <AppText variant="caption">Searching for a strong GPS signal…</AppText>}
           {active.foregroundOnly && active.state === 'running' && (
             <AppText variant="caption" style={styles.center}>
