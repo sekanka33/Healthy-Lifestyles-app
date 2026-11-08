@@ -34,17 +34,35 @@ export async function requestReminderPermission(): Promise<boolean> {
   return (await Notifications.requestPermissionsAsync()).granted;
 }
 
-export async function clearMedicationReminders(): Promise<void> {
-  if (Platform.OS === 'web') return;
+// One at a time: saving a medication and the Meds tab regaining focus both re-plan, and two runs
+// interleaving (both clear, then both schedule) would deliver every dose twice. A clear on sign-out
+// queues behind a running sync, so it always wins.
+let queue: Promise<unknown> = Promise.resolve();
+function serial<T>(task: () => Promise<T>): Promise<T> {
+  const run = queue.then(task, task);
+  queue = run.catch(() => undefined);
+  return run;
+}
+
+async function cancelAll() {
   const pending = await Notifications.getAllScheduledNotificationsAsync().catch(() => []);
   await Promise.all(pending
     .filter((n) => n.content.data?.kind === KIND)
     .map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)));
 }
 
+export function clearMedicationReminders(): Promise<void> {
+  if (Platform.OS === 'web') return Promise.resolve();
+  return serial(cancelAll);
+}
+
 /** Re-plans every reminder from the server's schedule. Safe to call often. */
-export async function syncMedicationReminders(timeZone: string, meds?: Medication[]): Promise<void> {
-  if (Platform.OS === 'web') return;
+export function syncMedicationReminders(timeZone: string, meds?: Medication[]): Promise<void> {
+  if (Platform.OS === 'web') return Promise.resolve();
+  return serial(() => plan(timeZone, meds));
+}
+
+async function plan(timeZone: string, meds?: Medication[]): Promise<void> {
   const permission = await Notifications.getPermissionsAsync();
   if (!permission.granted) return;
 
@@ -56,7 +74,7 @@ export async function syncMedicationReminders(timeZone: string, meds?: Medicatio
   const doses = remind.size ? await api.medicationSchedule(from, to) : [];
 
   await ensureChannel();
-  await clearMedicationReminders();
+  await cancelAll();
   const upcoming = doses
     .filter((d) => d.status === 'upcoming' && remind.has(d.medication_id) && new Date(d.scheduled_for) > now)
     .slice(0, MAX_PENDING);

@@ -15,7 +15,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
 import { isHydrationReminder, syncHydrationReminders } from '@/lib/hydration-reminders';
 import { hydrationGoalMet } from '@/lib/hydration-store';
-import { isMedicationReminder } from '@/lib/medication-reminders';
+import { isMedicationReminder, syncMedicationReminders } from '@/lib/medication-reminders';
 import '@/lib/workout-tracker'; // registers the background location task at startup
 import { colors } from '@/theme/tokens';
 
@@ -82,13 +82,19 @@ function RootNavigator() {
 
   // Keep this device's water reminders in step with the account, including changes made elsewhere.
   const account = signedIn && verified;
+  // Medication reminders are scheduled a week ahead, so top them up on every foreground too —
+  // not only when the Meds tab is opened — or they run dry for someone who never visits it.
+  const medsTimeZone = account && user?.plan === 'premium' ? user.timezone : null;
   useEffect(() => {
     if (!account) return;
-    const refresh = () => void syncHydrationReminders().catch(() => undefined);
+    const refresh = () => {
+      void syncHydrationReminders().catch(() => undefined);
+      if (medsTimeZone) void syncMedicationReminders(medsTimeZone).catch(() => undefined);
+    };
     refresh();
     const sub = AppState.addEventListener('change', (s) => s === 'active' && refresh());
     return () => sub.remove();
-  }, [account]);
+  }, [account, medsTimeZone]);
 
   // Straight after registering (or signing in to an unverified account) go to the code screen.
   // On a cold start we don't: the app opens on its content and the gate sends them there on demand.
