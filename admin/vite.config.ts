@@ -12,6 +12,8 @@ export default defineConfig({
     css: false,
     // Run files one after another: parallel jsdom workers time out starting on slower machines.
     fileParallelism: false,
+    // Reuse one worker for all files (setup.ts resets DOM, storage and stubbed globals after each test).
+    isolate: false,
     testTimeout: 20_000,
   },
 });

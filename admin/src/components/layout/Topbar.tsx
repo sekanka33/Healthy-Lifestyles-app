@@ -1,7 +1,9 @@
-import { Bell, BellOff, ChevronDown, LogOut, Menu, Search, UserRound } from 'lucide-react';
+import { Bell, BellOff, ChevronDown, LogOut, Menu, Search, ShieldCheck, UserRound } from 'lucide-react';
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
+import { useAuth } from '../../lib/auth';
 import { searchNav } from '../../nav';
+import { SECURITY_PATH } from '../guards';
 import { cx } from '../ui';
 
 function useDismiss(ref: RefObject<HTMLElement | null>, open: boolean, close: () => void) {
@@ -21,7 +23,8 @@ function PageSearch() {
   const [active, setActive] = useState(0);
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
-  const results = searchNav(query);
+  const { can } = useAuth();
+  const results = searchNav(query).filter((r) => can(r.permission));
   useDismiss(box, open, () => setOpen(false));
 
   const go = (path: string) => { navigate(path); setQuery(''); setOpen(false); };
@@ -124,6 +127,12 @@ function AccountMenu({ account, onSignOut }: { account: AccountSummary | null; o
               <p className="truncate text-sm font-medium">{account.name}</p>
               <p className="truncate text-xs text-ink-500">{account.email}</p>
             </div>
+          )}
+          {account && (
+            <Link to={SECURITY_PATH} role="menuitem" onClick={() => setOpen(false)}
+              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-ink-700 hover:bg-line-soft">
+              <ShieldCheck className="size-4" aria-hidden /> Security
+            </Link>
           )}
           <button type="button" role="menuitem" disabled={!onSignOut} onClick={() => { setOpen(false); onSignOut?.(); }}
             className="flex w-full items-center gap-2 px-4 py-2 text-sm text-ink-700 hover:bg-line-soft disabled:cursor-not-allowed disabled:text-ink-400 disabled:hover:bg-transparent">

@@ -1,5 +1,6 @@
 import { ChevronsLeft, ChevronsRight, X } from 'lucide-react';
 import { NavLink } from 'react-router';
+import { useAuth } from '../../lib/auth';
 import { NAV } from '../../nav';
 import { cx } from '../ui';
 import { Logo } from './Logo';
@@ -10,6 +11,7 @@ export function Sidebar({ collapsed, onToggleCollapsed, mobileOpen, onCloseMobil
   mobileOpen: boolean;
   onCloseMobile: () => void;
 }) {
+  const { can } = useAuth();
   return (
     <>
       {/* Mobile backdrop */}
@@ -36,7 +38,7 @@ export function Sidebar({ collapsed, onToggleCollapsed, mobileOpen, onCloseMobil
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
-          {NAV.map((section) => (
+          {NAV.map((s) => ({ ...s, items: s.items.filter((i) => can(i.permission)) })).filter((s) => s.items.length > 0).map((section) => (
             <div key={section.title} className="mb-5 last:mb-0">
               <p className={cx('mb-1.5 px-2 text-[11px] font-semibold uppercase tracking-wider text-ink-400', collapsed && 'lg:sr-only')}>
                 {section.title}

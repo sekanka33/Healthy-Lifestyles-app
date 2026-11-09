@@ -2,7 +2,7 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { NAV, NAV_ITEMS, findNavItem, searchNav } from '../nav';
-import { renderAt } from '../test/render';
+import { makeAdmin, renderAt } from '../test/render';
 
 const sidebar = () => screen.getByRole('complementary', { name: 'Main navigation' });
 
@@ -40,10 +40,12 @@ describe('navigation config', () => {
   });
 });
 
-describe('app shell', () => {
-  it('lands on Overview with branding and breadcrumbs', () => {
-    renderAt('/');
-    expect(screen.getByRole('heading', { level: 1, name: 'Overview' })).toBeInTheDocument();
+describe('app shell (signed in as owner)', () => {
+  const owner = makeAdmin('owner');
+
+  it('lands on Overview with branding and breadcrumbs', async () => {
+    renderAt('/', { admin: owner });
+    expect(await screen.findByRole('heading', { level: 1, name: 'Overview' })).toBeInTheDocument();
     expect(within(sidebar()).getByText('LifePulse')).toBeInTheDocument();
     const crumbs = screen.getByRole('navigation', { name: 'Breadcrumb' });
     expect(within(crumbs).getByText('Business management')).toBeInTheDocument();
@@ -52,7 +54,8 @@ describe('app shell', () => {
 
   it('every sidebar link opens its page and marks it active', async () => {
     const user = userEvent.setup();
-    renderAt('/');
+    renderAt('/', { admin: owner });
+    await screen.findByRole('heading', { level: 1, name: 'Overview' });
     for (const item of NAV_ITEMS) {
       await user.click(within(sidebar()).getByRole('link', { name: item.label }));
       expect(screen.getByRole('heading', { level: 1, name: item.label })).toBeInTheDocument();
@@ -60,53 +63,46 @@ describe('app shell', () => {
     }
   });
 
-  it('section pages never show sample figures before their phase', () => {
-    renderAt('/payments');
-    expect(screen.getByText('Not connected yet')).toBeInTheDocument();
+  it('section pages never show sample figures before their phase', async () => {
+    renderAt('/payments', { admin: owner });
+    expect(await screen.findByText('Not connected yet')).toBeInTheDocument();
     expect(screen.getByText(/Phase 6/)).toBeInTheDocument();
     expect(screen.queryByText(/\$\d/)).not.toBeInTheDocument();
   });
 
-  it('shows a not-found page for unknown routes', () => {
-    renderAt('/does-not-exist');
-    expect(screen.getByText('Page not found')).toBeInTheDocument();
+  it('shows a not-found page for unknown routes', async () => {
+    renderAt('/does-not-exist', { admin: owner });
+    expect(await screen.findByText('Page not found')).toBeInTheDocument();
   });
 
   it('collapses the sidebar and remembers it', async () => {
     const user = userEvent.setup();
-    const { unmount } = renderAt('/');
-    await user.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
+    const { unmount } = renderAt('/', { admin: owner });
+    await user.click(await screen.findByRole('button', { name: 'Collapse sidebar' }));
     expect(screen.getByRole('button', { name: 'Expand sidebar' })).toBeInTheDocument();
     unmount();
-    renderAt('/');
-    expect(screen.getByRole('button', { name: 'Expand sidebar' })).toBeInTheDocument();
+    renderAt('/', { admin: owner });
+    expect(await screen.findByRole('button', { name: 'Expand sidebar' })).toBeInTheDocument();
   });
 
   it('page search navigates with the keyboard', async () => {
     const user = userEvent.setup();
-    renderAt('/');
-    await user.type(screen.getByRole('combobox', { name: 'Search pages' }), 'audit{Enter}');
+    renderAt('/', { admin: owner });
+    await user.type(await screen.findByRole('combobox', { name: 'Search pages' }), 'audit{Enter}');
     expect(screen.getByRole('heading', { level: 1, name: 'Audit Logs' })).toBeInTheDocument();
   });
 
   it('page search reports no matches', async () => {
     const user = userEvent.setup();
-    renderAt('/');
-    await user.type(screen.getByRole('combobox', { name: 'Search pages' }), 'zzz');
+    renderAt('/', { admin: owner });
+    await user.type(await screen.findByRole('combobox', { name: 'Search pages' }), 'zzz');
     expect(screen.getByText(/No pages match/)).toBeInTheDocument();
   });
 
   it('notifications panel shows an honest empty state', async () => {
     const user = userEvent.setup();
-    renderAt('/');
-    await user.click(screen.getByRole('button', { name: 'Notifications' }));
+    renderAt('/', { admin: owner });
+    await user.click(await screen.findByRole('button', { name: 'Notifications' }));
     expect(screen.getByRole('dialog', { name: 'Notifications' })).toHaveTextContent('No notifications');
-  });
-
-  it('sign out is unavailable while no one is signed in', async () => {
-    const user = userEvent.setup();
-    renderAt('/');
-    await user.click(screen.getByRole('button', { name: 'Account menu' }));
-    expect(screen.getByRole('menuitem', { name: /Sign out/ })).toBeDisabled();
   });
 });

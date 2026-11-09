@@ -40,6 +40,17 @@ class Settings(BaseSettings):
     verification_max_attempts: int = 5
     password_reset_ttl_minutes: int = 30
 
+    # Admin dashboard sessions (separate from app tokens; see app/services/admin_auth.py)
+    admin_session_idle_minutes: int = 30
+    admin_session_max_hours: int = 12
+    # None = required in production, optional elsewhere. When required, an admin without MFA can only
+    # reach the MFA enrolment endpoints until they finish setting it up.
+    admin_require_mfa: bool | None = None
+
+    @property
+    def admin_mfa_required(self) -> bool:
+        return self.environment == "production" if self.admin_require_mfa is None else self.admin_require_mfa
+
     # Encryption key for OAuth tokens at rest (Fernet, urlsafe base64, 32 bytes).
     token_encryption_key: str | None = None
 
@@ -83,6 +94,8 @@ class Settings(BaseSettings):
             problems.append("REVENUECAT_SECRET_API_KEY and REVENUECAT_WEBHOOK_AUTH are required")
         elif len(self.revenuecat_webhook_auth) < 32:
             problems.append("REVENUECAT_WEBHOOK_AUTH must be a random value of at least 32 characters")
+        if self.admin_require_mfa is False:
+            problems.append("ADMIN_REQUIRE_MFA cannot be false in production")
         if problems:
             raise RuntimeError("Insecure production configuration: " + "; ".join(problems))
 
