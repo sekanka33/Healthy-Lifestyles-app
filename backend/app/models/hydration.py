@@ -32,6 +32,7 @@ class HydrationEntry(UUIDPK, Base):
         CheckConstraint("volume_ml BETWEEN 1 AND 5000", name="volume_range"),
         in_check("source", ("app", "reminder", "import")),
         Index("ix_hydration_entries_user_time", "user_id", "consumed_at"),
+        Index("ix_hydration_entries_consumed", "consumed_at"),
     )
 
     user_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="CASCADE"))

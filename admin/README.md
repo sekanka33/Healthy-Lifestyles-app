@@ -48,5 +48,8 @@ src/
 | Phase | Status |
 |---|---|
 | 2. Frontend structure, navigation, design system | ✅ Done |
-| 3. Admin authentication & backend authorisation | Planned |
-| 4–10. Data pages | Planned |
+| 3. Admin authentication & backend authorisation | ✅ Done |
+| 4. Overview dashboard (live KPIs, charts, recent activity) | ✅ Done |
+| 5–10. Remaining data pages | Planned |
+
+First sign-in: create the Owner with `python -m app.scripts.create_owner` (see [docs/admin-api.md](../docs/admin-api.md)).

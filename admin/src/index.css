@@ -31,6 +31,11 @@
   --color-info: #2563eb;
   --color-info-bg: #dbeafe;
 
+  /* Charts. Validated (dataviz validate_palette.js, light, #fff): CVD ΔE 20.1, normal ΔE 21.2, contrast ≥ 3:1. */
+  --color-chart-1: #059669; /* single series / Premium */
+  --color-chart-2: #2a78d6; /* Free */
+  --color-chart-grid: #eef0f2;
+
   --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.06);
   --shadow-pop: 0 8px 24px rgb(16 24 40 / 0.12);
   --radius-card: 0.875rem;

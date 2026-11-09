@@ -1,4 +1,6 @@
+import type { ComponentType } from 'react';
 import { Route, Routes } from 'react-router';
+import { OverviewPage } from './pages/OverviewPage';
 import { RequireAuth, RequirePermission } from './components/guards';
 import { AppShell } from './components/layout/AppShell';
 import { useAuth } from './lib/auth';
@@ -8,6 +10,11 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { SectionPage } from './pages/SectionPage';
 import { SecurityPage } from './pages/SecurityPage';
 import { StyleGuidePage } from './pages/StyleGuidePage';
+
+/** Sections with real data. Anything not listed shows the honest "not connected yet" page. */
+const PAGES: Record<string, ComponentType> = {
+  '/': OverviewPage,
+};
 
 function Shell() {
   const { admin, logout } = useAuth();
@@ -26,7 +33,12 @@ export function AppRoutes() {
       <Route element={<RequireAuth />}>
         <Route element={<Shell />}>
           {NAV_ITEMS.map((item) => {
-            const page = <RequirePermission permission={item.permission}><SectionPage item={item} /></RequirePermission>;
+            const Built = PAGES[item.path];
+            const page = (
+              <RequirePermission permission={item.permission}>
+                {Built ? <Built /> : <SectionPage item={item} />}
+              </RequirePermission>
+            );
             return item.path === '/'
               ? <Route key={item.path} index element={page} />
               : <Route key={item.path} path={item.path.slice(1)} element={page} />;

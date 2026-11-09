@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router';
 import { vi } from 'vitest';
 import { AppRoutes } from '../App';
 import { AuthProvider, type AdminMe } from '../lib/auth';
+import type { Overview } from '../pages/OverviewPage';
 
 /** Permission sets per role, mirroring backend/app/core/admin_permissions.py (kept in sync by hand for tests). */
 export const ROLE_PERMISSIONS: Record<string, string[]> = {
@@ -61,6 +62,7 @@ export function renderAt(path = '/', { admin, handlers = {} }: { admin?: AdminMe
   const api = mockApi({
     ...(admin ? { 'GET /auth/me': () => ({ json: admin }) } : {}),
     'POST /auth/logout': () => ({ status: 204 }),
+    'GET /overview': () => ({ json: emptyOverview() }),
     ...handlers,
   });
   const utils = render(
@@ -71,4 +73,28 @@ export function renderAt(path = '/', { admin, handlers = {} }: { admin?: AdminMe
     </MemoryRouter>,
   );
   return { ...utils, api };
+}
+
+/** What the API returns for an empty database (owner view). */
+export function emptyOverview(): Overview {
+  const days = ['2026-11-08', '2026-11-09'];
+  return {
+    range: { from: days[0], to: days[1] },
+    generated_at: '2026-11-09T10:00:00Z',
+    users: { total: 0, active_in_range: 0, activity_tracked_since: null, new_in_range: 0, new_this_month: 0, premium: 0, premium_promotional: 0, free: 0 },
+    subscriptions: { premium_active: 0, converted_users: 0, conversion_rate: null, cancellations_in_range: 0, failed_payments_in_range: 0 },
+    revenue: { by_currency: [], sandbox_transactions_excluded: 0 },
+    series: {
+      user_growth: days.map((date) => ({ date, new_users: 0, total_users: 0 })),
+      active_users: days.map((date) => ({ date, active_users: 0 })),
+      conversion_monthly: [{ month: '2026-11', registered_users: 0, converted_users: 0, rate: null }],
+      revenue_monthly: [{ month: '2026-11', amounts: {} }],
+    },
+    feature_usage: [
+      { feature: 'water', label: 'Water tracking', users: 0, records: 0, record_label: 'drinks logged' },
+      { feature: 'medication', label: 'Medication', users: 0, records: 0, record_label: 'doses recorded' },
+      { feature: 'fitness', label: 'Fitness', users: 0, records: 0, record_label: 'workouts completed' },
+    ],
+    recent_activity: [],
+  };
 }

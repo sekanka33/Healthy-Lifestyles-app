@@ -14,7 +14,7 @@ def in_check(column: str, values: tuple[str, ...], name: str | None = None) -> C
 
 class User(UUIDPK, Timestamps, Base):
     __tablename__ = "users"
-    __table_args__ = (in_check("units", ("metric", "imperial")),)
+    __table_args__ = (in_check("units", ("metric", "imperial")), Index("ix_users_created_at", "created_at"))
 
     email: Mapped[str] = mapped_column(String(320), unique=True)  # stored lower-cased
     password_hash: Mapped[str] = mapped_column(String(255))

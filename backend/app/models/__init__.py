@@ -1,6 +1,7 @@
 """Import every model so Base.metadata is complete (used by Alembic and tests)."""
 
 from app.models.admin import AdminSession, AdminUser, AuditLog
+from app.models.analytics import UserActivityDay
 from app.models.billing import EmailMessage, Job, PaymentTransaction, SubscriptionEntitlement, WebhookEvent
 from app.models.fitness import FitnessGoal, HealthConnection, Workout, WorkoutPoint
 from app.models.hydration import HydrationEntry, HydrationGoal
@@ -23,7 +24,7 @@ from app.models.user import (
 )
 
 __all__ = [
-    "AdminSession", "AdminUser", "AuditLog",
+    "AdminSession", "AdminUser", "AuditLog", "UserActivityDay",
     "ActivityRecommendation", "CalendarEventRecord", "EmailMessage", "EmailPreferences", "FitnessGoal",
     "HealthConnection", "HydrationEntry", "HydrationGoal", "Job", "Medication", "MedicationDose",
     "NotificationPreferences", "OAuthConnection", "OAuthState", "OneTimeCode", "PaymentTransaction",

@@ -85,6 +85,29 @@ Error codes: `401 admin_not_authenticated` (no/expired/revoked session), `403 fo
 `403 mfa_setup_required`, `401 invalid_credentials`, `401 invalid_mfa_code`, `401 mfa_challenge_expired`,
 `429 rate_limited` (with `Retry-After`).
 
+## Overview (Phase 4)
+
+`GET /admin/overview?from=YYYY-MM-DD&to=YYYY-MM-DD` · permission `dashboard.read`
+
+Inclusive UTC dates; default the last 30 days (today + 29). 422 `invalid_range` if `from > to`, `to`
+is in the future, or the span exceeds 366 days. Returns `users`, `subscriptions`, `revenue`,
+`series` (`user_growth`, `active_users`, `conversion_monthly`, `revenue_monthly`), `feature_usage`
+and `recent_activity` (latest 20). `revenue` and `series.revenue_monthly` are `null` without
+`payments.read`; payment items and amounts are left out of `recent_activity` too. Admin actions
+appear only with `audit.read`. Emails in recent activity are masked (`a•••@example.com`).
+
+| Figure | Definition |
+|---|---|
+| Registered users | Rows in `users` |
+| Active users | Distinct users with an authenticated app request on a day in the range (`user_activity_days`, one row per user per UTC day). **Only tracked from the deployment of Phase 4 onwards**; `activity_tracked_since` says from when |
+| Premium | Premium entitlement now active / grace period / cancelled-but-paid-up and not expired. Same rule as the app. `premium_promotional` counts unpaid grants within it |
+| Free | Registered − Premium |
+| Converted users / conversion rate | Users with ≥ 1 verified production payment (succeeded or later refunded) ÷ registered users |
+| Revenue | `payment_transactions` with status `succeeded`, environment `production`, per currency. Refunds and sandbox excluded. **Never summed across currencies** |
+| MRR | Auto-renewing paid production subscriptions: latest succeeded payment × 30.4375 ÷ its billing-period days, per currency |
+| Cancellations / failed payments | RevenueCat `CANCELLATION` / `BILLING_ISSUE` webhook events received in the range (sandbox excluded) |
+| Feature usage | Distinct users + record counts in the range: drinks logged (undone ones excluded), medication doses recorded, completed workouts. Counts only |
+
 ## Audit log
 
 `audit_logs` is append-only. Each row: admin id, actor email snapshot (kept if the admin is deleted),

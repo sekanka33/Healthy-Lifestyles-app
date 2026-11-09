@@ -21,6 +21,7 @@ class Workout(UUIDPK, Timestamps, Base):
         in_check("status", ("in_progress", "completed", "discarded")),
         CheckConstraint("distance_m >= 0", name="distance_nonneg"),
         Index("ix_workouts_user_start", "user_id", "started_at"),
+        Index("ix_workouts_started", "started_at"),
     )
 
     user_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="CASCADE"))

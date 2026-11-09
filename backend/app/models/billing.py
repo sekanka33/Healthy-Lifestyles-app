@@ -44,6 +44,7 @@ class PaymentTransaction(UUIDPK, Timestamps, Base):
         in_check("status", ("succeeded", "pending", "failed", "refunded", "chargeback")),
         in_check("kind", ("initial_purchase", "renewal", "restore", "product_change")),
         Index("ix_payment_transactions_user", "user_id", "purchased_at"),
+        Index("ix_payment_transactions_purchased", "purchased_at"),
     )
 
     user_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="CASCADE"))
@@ -71,6 +72,7 @@ class WebhookEvent(UUIDPK, Base):
     __table_args__ = (
         UniqueConstraint("provider", "event_id"),
         in_check("status", ("received", "processed", "ignored", "failed")),
+        Index("ix_webhook_events_type_received", "event_type", "received_at"),
     )
 
     provider: Mapped[str] = mapped_column(String(32))

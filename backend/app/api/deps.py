@@ -8,6 +8,7 @@ from app.core import security
 from app.db.base import as_utc
 from app.db.session import get_db
 from app.models.user import User
+from app.services import activity
 
 DB = Annotated[Session, Depends(get_db)]
 
@@ -35,6 +36,7 @@ def current_user_any(
     # Tokens minted before a password change/reset are dead immediately, not after their TTL.
     if user.password_changed_at is not None and issued_at < as_utc(user.password_changed_at).timestamp():
         raise _unauthorized("Your session has expired.")
+    activity.record(db, user.id)  # daily-active-user count for the admin dashboard; at most one write/day
     return user
 
 
