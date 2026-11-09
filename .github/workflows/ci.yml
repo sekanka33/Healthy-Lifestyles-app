@@ -50,9 +50,28 @@ jobs:
       - run: npx expo lint
       - run: npm test
 
+  admin:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npx vite build
+
   docker:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Build the production image
         run: docker build -t lifepulse-api ./backend
+      - name: Build the admin image
+        run: docker build -t lifepulse-admin ./admin

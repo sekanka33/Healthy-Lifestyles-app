@@ -43,6 +43,14 @@ services:
     depends_on:
       migrate: { condition: service_completed_successfully }
 
+  admin:
+    build:
+      context: ./admin
+      args:
+        VITE_API_URL: ${ADMIN_API_URL:-http://localhost:8000}
+    ports: ["8080:8080"]
+    depends_on: [api]
+
   mailpit:
     image: axllent/mailpit:latest
     profiles: [dev]

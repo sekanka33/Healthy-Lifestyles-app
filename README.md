@@ -5,6 +5,7 @@ recommendations and Google Calendar planning (Premium, $11 USD / month).
 
 - `mobile/` — Expo SDK 58 · React Native · TypeScript · Expo Router
 - `backend/` — FastAPI · SQLAlchemy · Alembic · PostgreSQL
+- `admin/` — owner admin dashboard (React · Vite · Tailwind) — see [admin/README.md](admin/README.md)
 - `docs/` — [design reference](docs/design-reference.md), [architecture](docs/architecture.md), [subscriptions setup](docs/subscriptions-setup.md), [calendar setup](docs/calendar-setup.md), [deployment](docs/deployment.md), [privacy policy template](docs/privacy-policy-template.md)
 
 ## Status
